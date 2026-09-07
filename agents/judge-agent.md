@@ -75,9 +75,15 @@ twenty lines you need, not the file. - **One shell call, several commands.**
 Being thorough is about what you check, not how many calls you spend checking
 it.
 
-**Length is a budget.** Six lines per hole: the quote it lands on, why it
-sinks, what would answer it. Earlier rounds collapse to one line each —
-verdict and which holes survived.
+**Length is a budget.** Six lines per hole. Earlier rounds collapse to one
+line each — verdict and which holes survived.
+
+Each one written like this:
+
+```
+H<n> · <slug> — the spec line it lands on, quoted
+     why it sinks this, and what would answer it
+```
 
 ## Report
 

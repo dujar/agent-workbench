@@ -58,14 +58,16 @@ plan was written — a file it names may be gone, a signature may have changed.
 
 ## Your branch
 
-**Never assume the integration branch is called `master`.** Capture it before
-you touch anything, and use that variable everywhere:
+Capture where you are and what you branch from, before you touch anything, and
+use both everywhere after:
 
 ```
-BASE=$(git rev-parse --abbrev-ref HEAD)
+ROOT=$(git rev-parse --show-toplevel)   # your worktree — not necessarily the repo
+BASE=$(git -C "$ROOT" rev-parse --abbrev-ref HEAD)
 case "$BASE" in
-  step-*) BASE=$(git for-each-ref --format='%(refname:short)' refs/heads \
-                 | grep -Ex 'main|master|develop|trunk' | head -1) ;;
+  main|master|develop|trunk) ;;                      # already an integration branch
+  *) BASE=$(git -C "$ROOT" for-each-ref --format='%(refname:short)' refs/heads \
+            | grep -Ex 'main|master|develop|trunk' | head -1) ;;
 esac
 ```
 
@@ -75,7 +77,10 @@ git switch -c step-3-auth "$BASE"           # or: git switch step-3-auth, if it 
 
 The `case` matters on a resumed run. If you were re-spawned onto a step branch
 that already exists, `HEAD` is that branch — capture it blindly and you rebase
-the branch onto itself and merge it into itself. If `BASE` comes back empty,
+the branch onto itself and merge it into itself. It is written as an
+allow-list rather than a deny-list because a worktree can come up detached,
+and `git rev-parse --abbrev-ref HEAD` then returns the literal string `HEAD`,
+which would sail past any test for names that look wrong. If `BASE` comes back empty,
 or equal to your own branch, stop and ask the caller rather than guessing.
 
 Never commit to `$BASE`. If you were spawned into a worktree you are already
@@ -168,12 +173,7 @@ the step directory.
   your report; either fix it or record why you did not, in `findings.md`.
 ### Where your sub-agents work
 
-Capture your own location before you spawn anything, and put it in every
-dispatch:
-
-```
-ROOT=$(git rev-parse --show-toplevel)   # your worktree, not necessarily the repo
-```
+`$ROOT`, captured under *Your branch*, goes in every dispatch.
 
 If you were spawned with `isolation: "worktree"`, `$ROOT` is a temporary
 worktree of your own and the other builders are in theirs. Never assume a

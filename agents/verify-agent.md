@@ -124,8 +124,17 @@ twenty lines you need, not the file. - **One shell call, several commands.**
 Being thorough is about what you check, not how many calls you spend checking
 it.
 
-**Length is a budget.** Six lines per loose end: where, evidence, fix. The
-hard-gate section is two lines when neither trips.
+**Length is a budget.** Six lines per loose end. The hard-gate section is two
+lines when neither trips.
+
+Each one written like this:
+
+```
+[kind] short title
+  where:    plan task N / file:line
+  evidence: what you found, or the grep that came back empty
+  fix:      the smallest thing that closes it
+```
 
 ## Report
 

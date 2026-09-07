@@ -30,19 +30,25 @@ Read that step's `plan.md` first, then the diff against the integration branch
 than assuming:
 
 ```
-BASE=$(git rev-parse --abbrev-ref HEAD)
+ROOT=<the absolute repository root your dispatch named>
+BASE=$(git -C "$ROOT" rev-parse --abbrev-ref HEAD)
 case "$BASE" in
-  step-*) BASE=$(git for-each-ref --format='%(refname:short)' refs/heads \
-                 | grep -Ex 'main|master|develop|trunk' | head -1) ;;
+  main|master|develop|trunk) ;;                      # already an integration branch
+  *) BASE=$(git -C "$ROOT" for-each-ref --format='%(refname:short)' refs/heads \
+            | grep -Ex 'main|master|develop|trunk' | head -1) ;;
 esac
 ```
 
 ```
-git diff "$BASE...<branch>"
+git -C "$ROOT" diff "$BASE...<branch>"
 ```
 
 You are invoked while the step branch is checked out, so `HEAD` is that branch
-— the `case` is what stops you diffing the branch against itself. That failure
+— the `case` is what stops you diffing the branch against itself. It accepts
+`HEAD`'s branch **only when it is already an integration branch**, rather than
+rejecting the shapes it happens to recognise: a worktree can come up detached,
+and `git rev-parse --abbrev-ref HEAD` then returns the literal string `HEAD`,
+which every command after it would treat as a branch name. That failure
 is silent and total: an empty diff has nothing wrong with it, so you would
 return `APPROVED` on code nobody read.
 
@@ -121,6 +127,12 @@ it.
 
 **Length is a budget.** Eight lines per finding. Earlier rounds collapse to
 one line each — verdict and which findings closed.
+
+Each one written like this:
+
+```
+[blocking] file:line — what is wrong — what breaks — the smallest fix
+```
 
 ## Report
 

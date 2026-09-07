@@ -88,8 +88,14 @@ twenty lines you need, not the file. - **One shell call, several commands.**
 Being thorough is about what you check, not how many calls you spend checking
 it.
 
-**Length is a budget.** One line per gap, as the format below. No preamble, no
-summary of what you read.
+**Length is a budget.** One line per gap. No preamble, no summary of what you
+read.
+
+Each one written like this:
+
+```
+file:line — what is missing — the smallest fix
+```
 
 ## Report
 

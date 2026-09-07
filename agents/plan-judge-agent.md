@@ -78,8 +78,14 @@ twenty lines you need, not the file. - **One shell call, several commands.**
 Being thorough is about what you check, not how many calls you spend checking
 it.
 
-**Length is a budget.** Four lines per gap: what is missing, where it goes,
-the smallest fix. Earlier rounds collapse to one line each.
+**Length is a budget.** Four lines per gap. Earlier rounds collapse to one
+line each.
+
+Each one written like this:
+
+```
+[gap] what is missing — where it belongs (before which step) — the smallest fix
+```
 
 ## Report
 
