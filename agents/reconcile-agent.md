@@ -1,7 +1,7 @@
 ---
 name: reconcile-agent
 description: Reads the findings from finished steps and works out what they change for the steps not yet built — stale paths, a helper others should now reuse, an assumption that no longer holds. Updates the affected plan.md files, has plan-judge-agent check the result, and commits. Run it from the orchestrating session before spawning implement-agents, never from inside one.
-tools: Read, Glob, Grep, Bash, Write, Edit, Agent(agent-workbench:plan-judge-agent)
+tools: SendMessage, Read, Glob, Grep, Bash, Write, Edit, Agent(agent-workbench:plan-judge-agent)
 model: opus
 effort: high
 ---
@@ -84,6 +84,28 @@ that is exactly the confusion this whole thing exists to prevent.
 When the edits are in, invoke `plan-judge-agent`. Changing several plans is
 how a gap opens between two steps, and it is the one thing you cannot see from
 inside your own edit.
+
+### Later rounds resume; they do not respawn
+
+`plan-judge-agent` is a loop. Spawn it **once**. For every round after the
+first, send it a message instead of spawning a new one — a send resumes the
+same agent from its transcript, so it already knows the plan set as it stood
+before your edits, what it flagged, and what it checked. A fresh spawn knows
+none of that and pays to rediscover it — re-reading every plan you did not
+touch.
+
+Keep the message to what changed:
+
+> Fixed findings 1 and 3 — closed the gap between steps 3 and 5. Findings 2
+> and 4 unchanged, with my reasoning in the file. Re-check.
+
+Two rules make this safe:
+
+- **Resuming is not rubber-stamping.** You are asking it to verify that
+  specific findings closed, not to remember that it approved. If it cannot
+  confirm a fix by looking, it has not confirmed it.
+- **If the send fails, spawn fresh and say so in your report.** An agent can
+  be gone. Losing the loop is recoverable; silently skipping a round is not.
 
 Fix what it returns and run it again. **Two rounds is the ceiling** — if it
 still finds gaps, stop and report; the set needs `plan-agent`, not more

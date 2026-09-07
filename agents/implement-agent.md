@@ -1,7 +1,7 @@
 ---
 name: implement-agent
 description: Builds one step from its plan.md on its own branch, loops with review-agent until approved, merges when it safely can, and writes findings.md. Pass it exactly one step directory. Spawn several in parallel with isolation "worktree" when their steps do not depend on each other — but run reconcile-agent first if any findings are unreconciled, and merge the returned branches yourself, one at a time.
-tools: Read, Glob, Grep, Bash, Write, Edit, Agent(agent-workbench:verify-agent), Agent(agent-workbench:review-agent)
+tools: SendMessage, Read, Glob, Grep, Bash, Write, Edit, Agent(agent-workbench:verify-agent), Agent(agent-workbench:review-agent)
 model: opus
 effort: high
 ---
@@ -166,6 +166,29 @@ the step directory.
   in `findings.md`; they do not hold up a merge.
 - A blocking count — fix them, commit, invoke it again. Do not argue a finding away in
   your report; either fix it or record why you did not, in `findings.md`.
+### Later rounds resume; they do not respawn
+
+`review-agent` is a loop. Spawn it **once**. For every round after the first,
+send it a message instead of spawning a new one — a send resumes the same
+agent from its transcript, so it already knows the branch, the plan and the
+diff, what it flagged, and what it checked. A fresh spawn knows none of that
+and pays to rediscover it — re-reading the plan, re-reading the whole diff,
+re-running the suite and redoing its mutation checks.
+
+Keep the message to what changed:
+
+> Fixed findings 1 and 3 — the assertion now discriminates, and the status
+> line is corrected. Findings 2 and 4 unchanged, with my reasoning in the
+> file. Re-check.
+
+Two rules make this safe:
+
+- **Resuming is not rubber-stamping.** You are asking it to verify that
+  specific findings closed, not to remember that it approved. If it cannot
+  confirm a fix by looking, it has not confirmed it.
+- **If the send fails, spawn fresh and say so in your report.** An agent can
+  be gone. Losing the loop is recoverable; silently skipping a round is not.
+
 - **Three rounds is the ceiling.** If review still blocks after three, report
   `BLOCKED` and stop. Something is wrong with the plan, not with the attempt.
 
