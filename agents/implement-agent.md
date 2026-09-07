@@ -85,6 +85,11 @@ the commits do not.
 Commit as you go, one commit per meaningful piece. A single commit at the end
 makes review harder and bisecting impossible.
 
+Commit your own step's workbench files — `verify.md`, `review.md`,
+`findings.md` — along with the code, so they travel with the merge and the
+next step can read what yours learned. Leaving them untracked leaves the
+branch dirty and the record local to a worktree that is about to disappear.
+
 **Never commit `.agent-workbench/step-feature-state.md`.** The tracker is
 shared, several of you may be running, and a shared file edited on several
 branches is a merge conflict at best and a lost row at worst. The caller keeps
@@ -151,8 +156,9 @@ edge cases you honour.
 When the step's tests pass, invoke `review-agent` with your branch name and
 the step directory.
 
-- `APPROVED` — merge.
-- Findings — fix them, commit, invoke it again. Do not argue a finding away in
+- `APPROVED` — merge, whether or not it carried non-blocking notes. Those go
+  in `findings.md`; they do not hold up a merge.
+- A blocking count — fix them, commit, invoke it again. Do not argue a finding away in
   your report; either fix it or record why you did not, in `findings.md`.
 - **Three rounds is the ceiling.** If review still blocks after three, report
   `BLOCKED` and stop. Something is wrong with the plan, not with the attempt.

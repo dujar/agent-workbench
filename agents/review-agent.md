@@ -75,6 +75,12 @@ a finding regardless of whether it works.
 - **Evidence or silence.** Every finding cites `file:line` from the diff and
   says what breaks. A suspicion you cannot ground is noise, and noise here
   costs a whole round.
+- **`APPROVED` means no blocking findings — not zero findings.** Non-blocking
+notes never withhold approval: write them in `review.md` and return `APPROVED`
+anyway. Reserve the count form for when something actually blocks. Otherwise a
+step with two harmless nits never reaches a verdict the caller is allowed to
+merge on, and the loop burns its three rounds polishing.
+
 - **Blocking or not, and say which.** A missing feature blocks. A name you
   would have chosen differently does not. Mark every finding, and never block
   on taste — you are one of three rounds, and a round spent on preference is a
@@ -99,7 +105,7 @@ Write:
 Then return, and return only:
 
 ```
-VERDICT: <one of: APPROVED   |   <n> blocking, <m> non-blocking>
+VERDICT: <one of: APPROVED   |   APPROVED — <m> non-blocking notes   |   <n> blocking>
 wrote: <the path(s)>
 ```
 

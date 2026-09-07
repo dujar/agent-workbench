@@ -129,6 +129,12 @@ own words, in `spec.md`:
 **Phase 2 — the market, as a loop.** Invoke `market-agent`. It comes back with
 who already solves this, how, for whom, and what people complain about.
 
+You may run it in round 1, alongside the phase-1 questions rather than after
+them — who else solves this problem does not depend on how the user answers,
+and running it early costs no round and often rewrites the questions you were
+about to ask. Say in `state.md` that you did. `judge-agent` is different: it
+judges the answers, so it waits for them.
+
 If it returns `NO SOURCES`, the competitive picture is missing, not empty.
 Record that in `spec.md`, tell the user in your report, and carry on — but
 never let a failed search read as "no competitors found". Those two are

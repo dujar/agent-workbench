@@ -70,8 +70,11 @@ that is an opening or a graveyard. Somebody has usually tried it.
 
 ## Rules
 
-- **Cite everything.** URL and the date you read it. A number without a source
-  is a rumour.
+- **Cite everything, per entry.** Every product you name carries a resolvable
+identifier on its own line — a URL, or an unambiguous `owner/repo` for
+something on GitHub. Naming sixteen products and linking six is not citing;
+the reader cannot check the ten. Every number carries its source and the date
+you read it, because a number without one is a rumour.
 - **Separate claimed from verified.** "10,000 customers" on a homepage is
   marketing. A review count is evidence. Label which is which.
 - **"No competitors" is a search failure, not a finding.** If nothing turns

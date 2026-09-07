@@ -14,12 +14,22 @@ compaction, a closed laptop, and a colleague picking it up on Monday.
 /plugin install agent-workbench
 ```
 
-Or, to try it from a local clone:
+Or from a local clone — which is what you want while editing the agents, since
+a directory source picks up your changes on the next session instead of needing
+a push and a `marketplace update`:
 
 ```
-/plugin marketplace add /path/to/this/repo
-/plugin install agent-workbench
+claude plugin marketplace add /path/to/this/repo
+claude plugin install agent-workbench@agent-workbench --yes
 ```
+
+Either way, **restart the session**: agent definitions load at startup.
+`claude --continue` resumes the conversation with them available.
+
+`claude plugin details agent-workbench` shows the component inventory and what
+it costs — roughly 1.2k tokens always-on for the ten descriptions, and 1.3k–5.3k
+per agent invocation. `claude plugin disable agent-workbench` turns it off for
+projects that do not need it.
 
 ## The flow
 
