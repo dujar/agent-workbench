@@ -254,9 +254,17 @@ sees your tool output. Make it stand alone:
   3. A builder that returns `READY TO MERGE` has a rebased, reviewed branch.
      The caller merges those **one at a time** — git refuses to update a
      branch checked out elsewhere, and two merges at once is how a green
-     build disappears.
+     build disappears. **Run the test suite on the base branch after each
+     merge**, before starting the next: two branches that each pass can merge
+     into something that does not, and the merge is the only place that shows.
+     A red base means revert that merge and mark the step `blocked`.
   4. After each merge, the caller sets that row's status to `done` — or
-     `blocked` on a `BLOCKED` return — and loops back to 1.
+     `blocked` on a `BLOCKED` return — then runs
+     `scripts/check-workbench.sh` and loops back to 1. That script is
+     deterministic and free: it catches the drift none of us can see from
+     inside a single step — a dependency pointing at a step that does not
+     exist, a `done` row with no `findings.md`, a *Resources* path that stopped
+     resolving, a loop that is not closing.
 - The judge's verdict and how many rounds it took. If you stopped at the
   ceiling, every gap still open.
 - Every open question, spelled out. Do not make the reader open the file to

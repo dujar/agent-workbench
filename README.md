@@ -154,6 +154,8 @@ and cannot see each other.
 | `review-agent` | opus / high | Reviews one branch against its plan | `step-*/review.md` |
 | `reconcile-agent` | opus / high | Folds findings into the plans that follow | edits `step-*/plan.md` |
 
+Plus `scripts/check-workbench.sh` — no model, just invariants. See below.
+
 ## Conventions the agents share
 
 **Mockups are HTML you can open.** Every screen links `../theme.css` and never
@@ -223,6 +225,25 @@ provider's side and may not exist off Anthropic. It falls back to `WebFetch`
 `NO SOURCES` rather than writing a competitive landscape from memory. A failed
 search and an empty market are opposite findings; the agent will not conflate
 them.
+
+## Checking the workbench
+
+The agents write markdown that other agents parse, so drift is otherwise
+silent. One script catches the mechanical half, with no model involved:
+
+```
+scripts/check-workbench.sh            # or: scripts/check-workbench.sh path/to/.agent-workbench
+```
+
+It fails loudly on: a tracker row whose directory is missing, a dependency on a
+step that does not exist or is built later, a status nothing ever writes, a
+`done` step with no `findings.md`, a *Resources* path that no longer resolves,
+a screen no journey reaches, a missing `approved:` line, and a loop that has
+run past its ceiling. Exit 0 clean, 1 on problems.
+
+Run it between stages — after planning, and after each merge. It is free and
+instant, and every one of those failures is invisible until something builds
+against it.
 
 ## Should you commit `.agent-workbench/`?
 

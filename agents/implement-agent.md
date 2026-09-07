@@ -169,14 +169,32 @@ git worktree list           # is $BASE checked out in another worktree?
 ```
 
 - **`$BASE` is yours to check out** — you are running alone, in the main
-  worktree. Merge it: `git switch "$BASE" && git merge --no-ff step-3-auth`,
-  then report `MERGED`.
+  worktree. Merge it, then **prove the merge itself is green**:
+
+  ```
+  git switch "$BASE"
+  PRE=$(git rev-parse HEAD)          # so you can undo this exactly
+  git merge --no-ff step-3-auth
+  <run the full test suite>          # on $BASE, after the merge
+  ```
+
+  Only report `MERGED` if that suite passes. If it fails, undo the merge —
+  `git reset --hard "$PRE"` while it is unpushed, `git revert -m 1 HEAD` once
+  it is not — and report `BLOCKED`, naming the failing tests.
+
+  This is not the same check as the one you ran on your branch. **Two branches
+  that each pass can merge into something that does not:** one renames a
+  field, the other adds a caller for the old name, and git merges both cleanly
+  because they touch different lines. Nothing before this point can see that,
+  and if you skip it the next step inherits a broken tree and spends its round
+  debugging your bug as if it were its own.
 - **`$BASE` is checked out elsewhere** — you are one of several running in
   parallel. Git will refuse to update a branch checked out in another
   worktree, and that refusal is correct: two agents merging at once is how a
   green build disappears. Stop at rebased-and-approved and report
   `READY TO MERGE` with your branch name. The caller merges the ready branches
-  one at a time.
+  one at a time, and runs the suite on `$BASE` after each one for the same
+  reason.
 
 Either way, do not fight it. If you cannot resolve a rebase conflict without
 guessing at another step's intent, stop, leave the branch, and report
