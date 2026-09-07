@@ -144,7 +144,7 @@ the step directory.
 
 **Find the verdict, do not read for it.** `review-agent` answers on a line
 starting `VERDICT:`. Look for that line anywhere in its report and act on what
-follows — preamble above it is noise, not a failure. If there is no such line
+follows — preamble above it is noise, not a failure. The findings themselves are in the `review.md` its receipt names, not in the message — open it. If there is no such line
 at all, treat it as a failure and treat the round as blocking and fix what it
 named, never as the good outcome. A sub-agent that summarises instead of
 stating a verdict has told you nothing, and reading approval into "looks fine"
@@ -237,33 +237,25 @@ is not yours to fill in.
 
 ## Report
 
-Your final message is the ONLY thing that reaches the caller — it never sees
-your tool output. Open with one of `MERGED`, `READY TO MERGE`, `BLOCKED`, or
-`STOPPED`, and the branch name — the caller merges on that word and updates
-`step-feature-state.md` from it, so it has to be exact.
+**The files are the output. Your message is a receipt, not a summary.**
 
-**Say the verdict on a labelled line.** On a line of its own, write:
+Write:
 
-    VERDICT: <one of the forms above>
+- `<step dir>/findings.md`
 
-so `VERDICT: MERGED step-3-auth` or `VERDICT: BLOCKED step-3-auth`.
+Then return, and return only:
 
-Put it first, before anything else — but **the label is the contract, not the
-position.** The caller greps for a line starting `VERDICT:` and acts on what
-follows. A report without that line has told the caller nothing, whatever else
-it says.
+```
+VERDICT: <one of: MERGED <branch>   |   READY TO MERGE <branch>   |   BLOCKED <branch>   |   STOPPED <branch>>
+wrote: <the path(s)>
+```
 
-The rule is labelled because position alone does not survive. Under test, an
-agent opened with "Confirmed: day.html is referenced in journeys.md" and "Now
-compiling the report per the exact format required", pushing a perfectly good
-verdict to line three where nothing was reading. With a label, that preamble
-costs nothing.
+The branch name lives in the verdict because the caller merges with it. On
+`BLOCKED` or `STOPPED`, add one line saying what would unblock it — that is a
+decision, not a record.
 
-Write a verdict, not a mood — "Mostly fine, a couple of small things" after
-the label is as useless as no label. If you genuinely cannot reach one, the
-failure is the verdict: an honest failure is parseable, a paraphrase is not.
-
-
-Then: what you built in three lines, how many review rounds it took, anything
-the plan got wrong, and the path to `findings.md`. If blocked or stopped, lead
-with why and what would unblock it.
+Nothing else. Do not restate your findings, recap your reasoning, or explain
+what you did — the caller can open the file, and a summary that drifts from
+what you wrote is worse than no summary. The only thing that belongs here
+beyond the verdict and the paths is a fact the caller must act on and cannot
+get by reading.

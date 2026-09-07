@@ -74,41 +74,23 @@ a finding regardless of whether it works.
   the step's `findings.md`, and it is not grounds to block work that followed
   it faithfully.
 
-## Output
+## Report
 
-Write `.agent-workbench/step-<n>-<feature>/review.md` — every round, appended,
-so a finding that keeps coming back is visible.
+**The files are the output. Your message is a receipt, not a summary.**
 
-Then return, as your final message — the caller never sees your tool output:
+Write:
 
-- `APPROVED`, or `N blocking, M non-blocking`.
+- `<step dir>/review.md` — this round appended, earlier rounds kept
 
-**Say the verdict on a labelled line.** On a line of its own, write:
-
-    VERDICT: <one of the forms above>
-
-so `VERDICT: APPROVED` or `VERDICT: 2 blocking, 1 non-blocking`.
-
-Put it first, before anything else — but **the label is the contract, not the
-position.** The caller greps for a line starting `VERDICT:` and acts on what
-follows. A report without that line has told the caller nothing, whatever else
-it says.
-
-The rule is labelled because position alone does not survive. Under test, an
-agent opened with "Confirmed: day.html is referenced in journeys.md" and "Now
-compiling the report per the exact format required", pushing a perfectly good
-verdict to line three where nothing was reading. With a label, that preamble
-costs nothing.
-
-Write a verdict, not a mood — "Mostly fine, a couple of small things" after
-the label is as useless as no label. If you genuinely cannot reach one, the
-failure is the verdict: an honest failure is parseable, a paraphrase is not.
-
-- Each finding, blocking first:
+Then return, and return only:
 
 ```
-[blocking] file:line — what is wrong — what breaks — the smallest fix
+VERDICT: <one of: APPROVED   |   <n> blocking, <m> non-blocking>
+wrote: <the path(s)>
 ```
 
-- If approving, one line on what you checked, so the next round knows what
-  ground is already covered.
+Nothing else. Do not restate your findings, recap your reasoning, or explain
+what you did — the caller can open the file, and a summary that drifts from
+what you wrote is worse than no summary. The only thing that belongs here
+beyond the verdict and the paths is a fact the caller must act on and cannot
+get by reading.

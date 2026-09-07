@@ -81,7 +81,7 @@ patching.
 
 **Find the verdict, do not read for it.** `plan-judge-agent` answers on a line
 starting `VERDICT:`. Look for that line anywhere in its report and act on what
-follows — preamble above it is noise, not a failure. If there is no such line
+follows — preamble above it is noise, not a failure. The findings themselves are in `.agent-workbench/plan-judgment.md`, not in the message — open it. If there is no such line
 at all, treat it as a failure and count the round and run it again, never as
 the good outcome. A sub-agent that summarises instead of stating a verdict has
 told you nothing, and reading approval into "looks fine" is how an unchecked
@@ -102,38 +102,36 @@ Never commit code. You change plans; someone else changes the repo. If
 `git status` shows anything outside `.agent-workbench/`, stop and report it
 rather than committing around it.
 
+Append this round to `.agent-workbench/reconciliation.md` — which findings you
+folded in, which plans changed and why, and the judge's verdict. Earlier rounds
+stay; a finding that keeps rippling is worth seeing twice.
+
 Last, add `reconciled: <today>` to the header of every `findings.md` you
 processed, and commit that too. Without it the next run does all of this
 again.
 
 ## Report
 
-Your final message is the ONLY thing that reaches the caller — it never sees
-your tool output. Open with `RECONCILED — <n> plans updated`,
-`NOTHING TO RECONCILE`, or `NEEDS REPLANNING`.
+**The files are the output. Your message is a receipt, not a summary.**
 
-**Say the verdict on a labelled line.** On a line of its own, write:
+Write:
 
-    VERDICT: <one of the forms above>
+- the plans you edited, plus `.agent-workbench/reconciliation.md` with this round
+  appended
 
-so `VERDICT: NOTHING TO RECONCILE` or `VERDICT: RECONCILED — 3 plans updated`.
+Then return, and return only:
 
-Put it first, before anything else — but **the label is the contract, not the
-position.** The caller greps for a line starting `VERDICT:` and acts on what
-follows. A report without that line has told the caller nothing, whatever else
-it says.
+```
+VERDICT: <one of: RECONCILED — <n> plans updated   |   NOTHING TO RECONCILE   |   NEEDS REPLANNING>
+wrote: <the path(s)>
+```
 
-The rule is labelled because position alone does not survive. Under test, an
-agent opened with "Confirmed: day.html is referenced in journeys.md" and "Now
-compiling the report per the exact format required", pushing a perfectly good
-verdict to line three where nothing was reading. With a label, that preamble
-costs nothing.
+On `NEEDS REPLANNING`, add one line naming the structural change needed. The
+caller has to decide whether to run `plan-agent`, and cannot decide that from
+a path.
 
-Write a verdict, not a mood — "Mostly fine, a couple of small things" after
-the label is as useless as no label. If you genuinely cannot reach one, the
-failure is the verdict: an honest failure is parseable, a paraphrase is not.
-
-
-Then: which plans you changed and what each change was, in one line apiece;
-the judge's verdict; and the commit. If `NEEDS REPLANNING`, lead with what
-structural change is needed and why you could not make it yourself.
+Nothing else. Do not restate your findings, recap your reasoning, or explain
+what you did — the caller can open the file, and a summary that drifts from
+what you wrote is worse than no summary. The only thing that belongs here
+beyond the verdict and the paths is a fact the caller must act on and cannot
+get by reading.

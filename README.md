@@ -146,13 +146,13 @@ and cannot see each other.
 | `product-agent` | opus / high | Grills the idea into a spec, in six phases | `product/spec.md`, `journeys.md`, `state.md`, `screens/*.html` |
 | `market-agent` | sonnet / high | Web research: competitors, metrics, complaints | `product/market.md` |
 | `judge-agent` | opus / high | Adversarial holes in the idea | `product/judgment.md` |
-| `audit-agent` | sonnet / medium | One scope of thoroughness — `spec`, `journeys`, or `screens` | — |
+| `audit-agent` | sonnet / medium | One scope of thoroughness — `spec`, `journeys`, or `screens` | `product/audit-<scope>.md` |
 | `plan-agent` | **opus / max** | Phases and steps, one plan per feature | `step-*/plan.md`, the tracker |
 | `plan-judge-agent` | opus / high | Does the plan set reach a finished product, and can its parallel steps actually run in parallel? | `plan-judgment.md` |
-| `verify-agent` | opus / high | Does one plan survive contact with the code? | — |
+| `verify-agent` | opus / high | Does one plan survive contact with the code? | `step-*/verify.md` |
 | `implement-agent` | opus / high | Builds one step on a branch | code, `step-*/findings.md` |
 | `review-agent` | opus / high | Reviews one branch against its plan | `step-*/review.md` |
-| `reconcile-agent` | opus / high | Folds findings into the plans that follow | edits `step-*/plan.md` |
+| `reconcile-agent` | opus / high | Folds findings into the plans that follow | edits `step-*/plan.md`, `reconciliation.md` |
 
 Plus `scripts/check-workbench.sh` — no model, just invariants. See below.
 
@@ -183,6 +183,13 @@ declares those dependencies from the plans' *Scope* sections, and
 **Every loop has a ceiling.** Market and judgment: two passes. Audit: two. Plan
 judgment: two. Review: three. Then it reports what is still open and moves on. A
 loop with no exit is how work dies in review instead of shipping.
+
+**The files are the output; the message is a receipt.** Every agent writes its
+work to `.agent-workbench/` and returns only a `VERDICT:` line and the paths it
+wrote. Nothing restates its findings in the reply. Two reasons: the caller has
+Read, so a summary is a second copy that drifts from the first — and a pipeline
+where ten agents each narrate into the orchestrator's context fills it with
+prose nobody reads. Open the file.
 
 **Verdicts are labelled, not positional.** Every agent another agent acts on
 emits a line starting `VERDICT:` — `VERDICT: GREEN — screens`,

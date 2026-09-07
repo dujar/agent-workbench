@@ -175,7 +175,7 @@ close.
 
 **Find the verdict, do not read for it.** `audit-agent` answers on a line
 starting `VERDICT:`. Look for that line anywhere in its report and act on what
-follows — preamble above it is noise, not a failure. If there is no such line
+follows — preamble above it is noise, not a failure. The findings themselves are in `.agent-workbench/product/audit-<scope>.md`, not in the message — open it. If there is no such line
 at all, treat it as a failure and re-run that scope once, then report the
 scope as unaudited, never as the good outcome. A sub-agent that summarises
 instead of stating a verdict has told you nothing, and reading approval into
@@ -284,8 +284,10 @@ options:
 - Every option must be something you could actually build. No filler third
   choice to round out the list.
 
-Return an **ordered queue of at most eight**, most blocking first, and write
-the whole queue to `state.md` under *Open*. The main agent asks them one at a
+Write an **ordered queue of at most eight**, most blocking first, into
+`state.md` under *Open*. That file is where the caller reads them from — it has
+Read, and a question pasted into a message is a second copy that drifts from
+the one on disk. The main agent asks them one at a
 time, in order — and comes straight back to you the moment an answer makes a later
 question wrong. "No accounts" retires the next three questions about profiles;
 asking them anyway is how a spec ends up describing a product nobody chose.
@@ -326,54 +328,26 @@ fabricated decision costs more than another round.
 
 ## Report
 
-Your final message is the ONLY thing that reaches the main agent — it never
-sees your tool output. Make it stand alone.
+**The files are the output. Your message is a receipt, not a summary.**
 
-Open with `READY` or `ROUND <n>, phase <p> — <k> questions queued`.
+Write:
 
-**Say the verdict on a labelled line.** On a line of its own, write:
+- `state.md` — the question queue under *Open*, every answer under *Answered*
+  — plus `spec.md`, `journeys.md`, and the screens
 
-    VERDICT: <one of the forms above>
+Then return, and return only:
 
-so `VERDICT: READY` or `VERDICT: ROUND 4, phase 3 — 5 questions queued`.
+```
+VERDICT: <one of: READY   |   ROUND <n>, phase <p> — <k> questions queued>
+wrote: <the path(s)>
+```
 
-Put it first, before anything else — but **the label is the contract, not the
-position.** The caller greps for a line starting `VERDICT:` and acts on what
-follows. A report without that line has told the caller nothing, whatever else
-it says.
+On `READY`, add one line: the spec needs the user's approval, and on a yes the
+caller writes `approved: <today>` into `state.md`. `plan-agent` refuses to run
+without it.
 
-The rule is labelled because position alone does not survive. Under test, an
-agent opened with "Confirmed: day.html is referenced in journeys.md" and "Now
-compiling the report per the exact format required", pushing a perfectly good
-verdict to line three where nothing was reading. With a label, that preamble
-costs nothing.
-
-Write a verdict, not a mood — "Mostly fine, a couple of small things" after
-the label is as useless as no label. If you genuinely cannot reach one, the
-failure is the verdict: an honest failure is parseable, a paraphrase is not.
-
-
-Then, if not ready, the queue in full — every question with its header and its
-options, in the shape above, in order. The main agent asks from your message
-and cannot open `state.md` to find them. Follow with one line on what got
-settled this round, each question carrying its number so
-answers can come back as "Q7: OAuth only".
-
-End every non-`READY` report with a resume line, verbatim:
-
-> Answer these, then invoke product-agent again with just the answers. It
-> reads `.agent-workbench/product/state.md` to pick up where it left off.
-
-That line is the whole recovery story. If this conversation is compacted, or
-picked up tomorrow by someone else, the state on disk plus that instruction is
-enough — nobody has to remember what phase we were in.
-
-When `READY`: stop. Say plainly that the spec needs the user's approval before
-anything gets planned, and that on a yes the invoking agent should write
-`approved: <today>` into `state.md` — `plan-agent` reads that line and refuses
-to run without it. An approval nobody wrote down is an approval that gets
-re-litigated after the plan exists.
-
-Then: the paths you wrote, the tech stack in a sentence, the journey
-titles, the screen files as paths so they can be opened, and anything
-parked as deferred.
+Nothing else. Do not restate your findings, recap your reasoning, or explain
+what you did — the caller can open the file, and a summary that drifts from
+what you wrote is worse than no summary. The only thing that belongs here
+beyond the verdict and the paths is a fact the caller must act on and cannot
+get by reading.

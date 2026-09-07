@@ -62,41 +62,23 @@ not exist, stop and say so — there is no plan set to judge.
 - **Do not rewrite the plan.** Name the gap and the smallest step that closes
   it. Someone else decides.
 
-## Output
+## Report
 
-Write `.agent-workbench/plan-judgment.md` — every gap, with the step and file
-it lands on, and the round it was found in. Keep earlier rounds; a gap that
-reappears is worth seeing twice.
+**The files are the output. Your message is a receipt, not a summary.**
 
-Then return, as your final message — the caller never sees your tool output:
+Write:
 
-- `SHIPPABLE`, or `N gaps`.
+- `.agent-workbench/plan-judgment.md` — this round appended, earlier rounds kept
 
-**Say the verdict on a labelled line.** On a line of its own, write:
+Then return, and return only:
 
+```
+VERDICT: <one of: SHIPPABLE   |   <n> gaps>
+wrote: <the path(s)>
+```
 
-    VERDICT: <one of the forms above>
-
-
-so `SHIPPABLE` and `VERDICT: 5 gaps`.
-
-Put it first, before anything else — but **the label is the contract, not the
-position.** The caller greps for a line starting `VERDICT:` and acts on what
-follows it. A report without that line has told the caller nothing, whatever
-else it says.
-
-The rule exists because position alone does not survive. Tested, this agent
-opened with "Confirmed: day.html is referenced in journeys.md" and "Now
-compiling the report per the exact format required", pushing a perfectly good
-verdict to line three, where nothing was reading. With a label, that preamble
-costs nothing.
-
-And write a verdict, not a mood: "Mostly fine, a couple of small things" after
-the label is as useless as no label. If you genuinely cannot reach one, the
-verdict is the failure itself — an honest failure is parseable; a paraphrase
-is not.
-
-- Each gap, most blocking first: what is missing, where it should go
-  (before which step), and the smallest fix.
-- One line on what the plan set gets right, so the caller knows what not to
-  touch while fixing the rest.
+Nothing else. Do not restate your findings, recap your reasoning, or explain
+what you did — the caller can open the file, and a summary that drifts from
+what you wrote is worse than no summary. The only thing that belongs here
+beyond the verdict and the paths is a fact the caller must act on and cannot
+get by reading.

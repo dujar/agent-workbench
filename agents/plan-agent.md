@@ -65,6 +65,30 @@ plan-judge: 1 run (2026-09-07) — 3 gaps
 | 5    | 3      | e2e-journeys | step-5-e2e-journeys/ | planned | 4          |
 ```
 
+Below the table, write a **Next** block. The caller comes back to this between
+merges, so it lives on disk rather than in a message:
+
+```markdown
+## Next
+
+1. If any `step-*/findings.md` has no `reconciled:` line, run `reconcile-agent`
+   first — once, alone, with no builders running.
+2. Runnable now: **step 3, step 4** (dependencies all `done`). Nothing else — a
+   step whose dependency is still `planned`, `blocked`, or mid-build is not
+   ready, and spawning it builds on code that does not exist yet. Both go at
+   once: one `implement-agent` each, in a single parallel block, each with
+   `isolation: "worktree"`.
+3. A builder returning `READY TO MERGE` has a rebased, reviewed branch. Merge
+   those **one at a time** — git refuses to update a branch checked out
+   elsewhere. Run the suite on the base branch after each merge, before the
+   next: two branches that each pass can merge into something that does not,
+   and the merge is the only place that shows. Red base means revert that
+   merge and mark the step `blocked`.
+4. Set the row's status, run `scripts/check-workbench.sh`, and go back to 1.
+```
+
+Name the actual step numbers in point 2, not a rule for finding them.
+
 Status is one of `planned`, `done`, or `blocked` — nothing else, because
 nothing else is ever written. Everything starts `planned`. If a step already
 exists when you run, keep its status: resetting `done` to `planned` sends
@@ -182,7 +206,7 @@ the ceiling and said so.
 
 **Find the verdict, do not read for it.** `plan-judge-agent` answers on a line
 starting `VERDICT:`. Look for that line anywhere in its report and act on what
-follows — preamble above it is noise, not a failure. If there is no such line
+follows — preamble above it is noise, not a failure. The findings themselves are in `.agent-workbench/plan-judgment.md`, not in the message — open it. If there is no such line
 at all, treat it as a failure and count the round and run it again, never as
 the good outcome. A sub-agent that summarises instead of stating a verdict has
 told you nothing, and reading approval into "looks fine" is how an unchecked
@@ -236,37 +260,25 @@ Two rules:
 
 ## Report
 
-Your final message is the ONLY thing that reaches the main agent — it never
-sees your tool output. Make it stand alone:
+**The files are the output. Your message is a receipt, not a summary.**
 
-- The tracker path, and every step directory you wrote.
-- The steps in order: number, phase, feature, one-line goal, what it depends
-  on.
-- **How to run it**, spelled out, because the caller will not work this out
-  from the table:
-  1. If any `step-*/findings.md` has no `reconciled:` line, run
-     `reconcile-agent` first — once, alone, with no builders running.
-  2. **Only** the steps whose dependencies are all `done` can be built now.
-     Name them, and name nothing else — a step whose dependency is still
-     `planned`, `blocked`, or mid-build is not ready, and spawning it anyway
-     produces a branch built on code that does not exist yet. If more than one
-     is ready, those go **at the same time**: one `implement-agent` per step in
-     a single parallel block, each with `isolation: "worktree"`.
-  3. A builder that returns `READY TO MERGE` has a rebased, reviewed branch.
-     The caller merges those **one at a time** — git refuses to update a
-     branch checked out elsewhere, and two merges at once is how a green
-     build disappears. **Run the test suite on the base branch after each
-     merge**, before starting the next: two branches that each pass can merge
-     into something that does not, and the merge is the only place that shows.
-     A red base means revert that merge and mark the step `blocked`.
-  4. After each merge, the caller sets that row's status to `done` — or
-     `blocked` on a `BLOCKED` return — then runs
-     `scripts/check-workbench.sh` and loops back to 1. That script is
-     deterministic and free: it catches the drift none of us can see from
-     inside a single step — a dependency pointing at a step that does not
-     exist, a `done` row with no `findings.md`, a *Resources* path that stopped
-     resolving, a loop that is not closing.
-- The judge's verdict and how many rounds it took. If you stopped at the
-  ceiling, every gap still open.
-- Every open question, spelled out. Do not make the reader open the file to
-  discover the plan is blocked on something.
+Write:
+
+- every `step-*/plan.md`, and `step-feature-state.md` — the tracker plus a **Next**
+  block naming which steps are runnable now
+
+Then return, and return only:
+
+```
+VERDICT: <one of: PLANNED — <n> steps in <m> phases   |   <n> gaps (stopped at the judge's ceiling)>
+wrote: <the path(s)>
+```
+
+Write the run order into the tracker's **Next** block, not into this message.
+It is what the caller comes back to between merges, so it belongs on disk.
+
+Nothing else. Do not restate your findings, recap your reasoning, or explain
+what you did — the caller can open the file, and a summary that drifts from
+what you wrote is worse than no summary. The only thing that belongs here
+beyond the verdict and the paths is a fact the caller must act on and cannot
+get by reading.

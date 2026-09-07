@@ -81,33 +81,26 @@ that is an opening or a graveyard. Somebody has usually tried it.
 - **Do not recommend features.** You report the terrain. Deciding what to
   build on it is someone else's job.
 
-## Output
+## Report
 
-Write `.agent-workbench/product/market.md` — the full table and your notes,
-with sources.
+**The files are the output. Your message is a receipt, not a summary.**
 
-You may run twice, after the product has materially changed. **Append the
-second round; never overwrite the first.** The competitors that mattered to
-the old framing are the evidence for why it changed.
+Write:
 
-Then return, as your final message — the main agent never sees your tool
-output:
+- `.agent-workbench/product/market.md`
 
-- One line: how crowded, and by whom — or `NO SOURCES` if you could not search.
-- Which tool you searched with, so the reader knows how much to trust the rest.
-- The gap you think is real, in one sentence, and what would make it a trap.
-- The three findings that should change the product, each as a **question with
-  two to four options**, most consequential first, in this shape:
+Then return, and return only:
 
 ```
-header:   Wedge
-question: Acme covers this for teams and gets complaints about solo pricing.
-          Who is v1 for?
-options:
-  - Solo users — the complaint Acme is not answering. (Recommended)
-  - Small teams — head-on, needs a reason to switch.
-  - Both — wider, and slower to get right.
+VERDICT: <one of: <n> competitors   |   NO SOURCES>
+wrote: <the path(s)>
 ```
 
-Put the option you would pick first, marked `(Recommended)`. Never write an
-"Other" option — the picker adds one. No option you could not actually build.
+Add which tool you searched with. It tells the reader how much to trust the
+file.
+
+Nothing else. Do not restate your findings, recap your reasoning, or explain
+what you did — the caller can open the file, and a summary that drifts from
+what you wrote is worse than no summary. The only thing that belongs here
+beyond the verdict and the paths is a fact the caller must act on and cannot
+get by reading.
