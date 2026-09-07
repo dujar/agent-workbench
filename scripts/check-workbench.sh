@@ -54,9 +54,19 @@ for d in "$WB"/step-*/; do
   v=$(grep -m1 -E '^reconciled:' "$f" | sed -E 's/^reconciled:[[:space:]]*//; s/#.*$//' | tr -d '[:space:]')
   [ -z "$v" ] && pending="$pending $(basename "$d")"
 done
-if [ -n "$pending" ] && [ -f "$TRACKER" ] && grep -qE '\| *planned *\|' "$TRACKER"; then
-  say "reconciliation/"
-  bad "unreconciled findings in$pending, and steps are still planned — run reconcile-agent before spawning any builder, or every one of them stops"
+if [ -n "$pending" ] && [ -f "$TRACKER" ]; then
+  if grep -qE '\| *planned *\|' "$TRACKER"; then
+    say "reconciliation/"
+    bad "unreconciled findings in$pending, and steps are still planned — run reconcile-agent before spawning any builder, or every one of them stops"
+  else
+    # Nothing is planned, so no builder is blocked right now — but an
+    # unreconciled finding usually records a structural decision (a shared
+    # helper, a deferred refactor) that nobody has escalated. Silence here
+    # reads as "the project is finished" when it may just be "the gap was
+    # never closed."
+    say "reconciliation/"
+    bad "unreconciled findings in$pending with no step left planned — nothing is blocked, but the gap those findings describe may still be open; run reconcile-agent to close it out or escalate to plan-agent"
+  fi
 fi
 
 # ---- run log: invocation counts from outside the agents ------------------
