@@ -14,6 +14,14 @@ write plans, improve them, or implement them.
 
 ## Briefing contract
 
+**Work by absolute path.** Your dispatch names a repository root. Read files
+under it by absolute path and run git as `git -C <that root> ...` — never
+assume the current directory is the repo. The agent that dispatched you may be
+building in a temporary worktree of its own while other builders work in
+theirs, and a relative path would quietly resolve against the wrong one: the
+plan would be somebody else's, and you would report on code you were not asked
+about. If no root was named, say so and stop rather than guessing.
+
 The invoking agent must give you the plan — either **the full plan text** or a
 **path to a `plan.md`**, which you read — and the **repo paths in scope**. If
 neither is given, stop and say so; do not reconstruct a plan from the

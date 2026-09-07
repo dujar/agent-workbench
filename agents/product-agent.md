@@ -205,6 +205,13 @@ already knows the artefacts, what it flagged, and what it checked. A fresh
 spawn knows none of that and pays to rediscover it — a re-audit from cold
 re-reads the entire scope to check three gaps.
 
+**Address each by the `agentId` its spawn returned, never by name.** You run
+three `audit-agent`s at once and they all carry that one name, so a bare name
+resolves to whichever was created last — every re-audit message would land on
+the screens auditor regardless of which scope you meant. Keep the three ids
+from the spawn results and use them. Restate the scope in each message anyway,
+so a misroute is visible rather than silent.
+
 Keep the message to what changed:
 
 > Fixed findings 1 and 3 — added the unhappy path to the reading journey,

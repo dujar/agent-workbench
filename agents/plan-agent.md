@@ -201,6 +201,10 @@ same agent from its transcript, so it already knows the whole plan set, what
 it flagged, and what it checked. A fresh spawn knows none of that and pays to
 rediscover it — re-reading every `plan.md` and the tracker.
 
+**Address it by the `agentId` its spawn returned, never by name.** A name
+resolves to whichever agent took it last, and `reconcile-agent` spawns a
+`plan-judge-agent` of its own; the id is unambiguous and costs nothing.
+
 Keep the message to what changed:
 
 > Fixed findings 1 and 3 — added the missing e2e step, corrected step 4's

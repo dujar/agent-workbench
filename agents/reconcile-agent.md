@@ -94,6 +94,10 @@ before your edits, what it flagged, and what it checked. A fresh spawn knows
 none of that and pays to rediscover it — re-reading every plan you did not
 touch.
 
+**Address it by the `agentId` its spawn returned, never by name.** A name
+resolves to whichever agent took it last, and `plan-agent` spawns a
+`plan-judge-agent` of its own; the id is unambiguous and costs nothing.
+
 Keep the message to what changed:
 
 > Fixed findings 1 and 3 — closed the gap between steps 3 and 5. Findings 2

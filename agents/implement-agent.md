@@ -166,6 +166,23 @@ the step directory.
   in `findings.md`; they do not hold up a merge.
 - A blocking count — fix them, commit, invoke it again. Do not argue a finding away in
   your report; either fix it or record why you did not, in `findings.md`.
+### Where your sub-agents work
+
+Capture your own location before you spawn anything, and put it in every
+dispatch:
+
+```
+ROOT=$(git rev-parse --show-toplevel)   # your worktree, not necessarily the repo
+```
+
+If you were spawned with `isolation: "worktree"`, `$ROOT` is a temporary
+worktree of your own and the other builders are in theirs. Never assume a
+sub-agent starts in it, or stays in it across a resume. Give `verify-agent` and
+`review-agent` the **absolute** `$ROOT`, the absolute step directory and the
+branch name, every time — on the first dispatch and on every later message. A
+review that ran against the wrong worktree reviews someone else's code and says
+nothing is wrong.
+
 ### Later rounds resume; they do not respawn
 
 `review-agent` is a loop. Spawn it **once**. For every round after the first,
@@ -175,11 +192,19 @@ diff, what it flagged, and what it checked. A fresh spawn knows none of that
 and pays to rediscover it — re-reading the plan, re-reading the whole diff,
 re-running the suite and redoing its mutation checks.
 
-Keep the message to what changed:
+**Address it by the `agentId` its spawn returned, never by name.** Several
+steps build at once and every one of them spawns a child called
+`review-agent`; a bare name resolves to whichever was created last, so your
+round-two message would land on another step's reviewer, and it would answer
+about a branch you are not building. Keep the id from the spawn result and use
+it for every message.
 
-> Fixed findings 1 and 3 — the assertion now discriminates, and the status
-> line is corrected. Findings 2 and 4 unchanged, with my reasoning in the
-> file. Re-check.
+Keep the message to what changed, and restate the branch and `$ROOT` in it —
+a resumed agent should never have to infer where it is:
+
+> Branch `step-3-auth` in `/abs/path/to/worktree`. Fixed findings 1 and 3 —
+> the assertion now discriminates, and the status line is corrected. Findings
+> 2 and 4 unchanged, with my reasoning in the file. Re-check.
 
 Two rules make this safe:
 

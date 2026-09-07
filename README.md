@@ -205,6 +205,16 @@ is not rubber-stamping — and a send that fails falls back to a fresh spawn,
 said out loud, because losing the loop is recoverable and silently skipping a
 round is not.
 
+**Parallel builds address by id and absolute path.** Several steps build at
+once, each in its own git worktree, and each spawns a child called
+`review-agent` — so a name resolves to whichever was created last and a
+round-two message would land on another step's reviewer. Loops address their
+children by the `agentId` the spawn returned. For the same reason no agent
+trusts its working directory: a builder passes its worktree root as an
+absolute path on every dispatch and every resume, and its children run `git -C
+<root>` rather than assuming where they are. A review that ran against the
+wrong worktree reviews someone else's code and reports nothing wrong.
+
 **Every loop has a ceiling.** Market and judgment: two passes. Audit: two. Plan
 judgment: two. Review: three. Then it reports what is still open and moves on. A
 loop with no exit is how work dies in review instead of shipping.
