@@ -286,6 +286,38 @@ that keeps repeating is the thing you want to see. It is also the evidence
 because the alternative is an agent counting its own rounds in a file it wrote
 itself. That is not a control.
 
+## What it costs
+
+Measured on real runs, not estimated. One build step through the full chain —
+`verify-agent`, build, `review-agent` twice, merge — took **13 minutes and
+~55k tokens**. A `product-agent` round is 38–75k depending on whether
+`market-agent` runs inside it.
+
+Where those tokens go, for one 54.8k build step:
+
+| | tokens | share |
+|---|---|---|
+| Agent prompts (its own plus nested) | ~6k | 11% |
+| Files it wrote | ~6.2k | 11% |
+| Tool results replayed across 37 turns | ~42k | 78% |
+
+So the prompts are not the lever — trimming them costs correctness to save a
+tenth. **Turns are the lever**, because every tool call re-sends everything
+before it, which makes cost roughly quadratic in call count. Each agent carries
+a `## Cost` section about batching calls, never re-reading a file, and grepping
+instead of reading whole files.
+
+Output is the second lever. `market.md` once came out at 9,076 tokens for
+sixteen competitors — 570 each, where a table row is 60. Every agent now has a
+stated length budget, and the append-forever files collapse earlier rounds to
+one line.
+
+The third lever is yours: eight of ten agents run on Opus. Moving the
+judgement-heavy ones to Sonnet is roughly a 5× cost cut, and it is a real
+trade — under test, `review-agent` on Opus mutation-tested a suite and caught a
+half-up assertion that did not actually discriminate. Try it and compare before
+deciding.
+
 ## Should you commit `.agent-workbench/`?
 
 Usually yes. The plans, findings, and mockups are review material, and

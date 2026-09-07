@@ -62,6 +62,25 @@ not exist, stop and say so — there is no plan set to judge.
 - **Do not rewrite the plan.** Name the gap and the smallest step that closes
   it. Someone else decides.
 
+## Cost
+
+Every tool call re-sends everything before it, so turns cost more than they
+look. Measured, a build step spent 78% of its tokens on tool results replayed
+across 37 calls — against 11% on this prompt and 11% on the files it wrote.
+
+- **Batch independent calls.** Reads and greps that do not depend on each
+other go in one message, not one after another. - **Never re-read a file you
+have read**, and never re-run a command whose inputs have not changed. Your
+earlier result is still in front of you. - **Grep before you read.** Pull the
+twenty lines you need, not the file. - **One shell call, several commands.**
+`a && b && c` is one turn; three calls are three replays of everything.
+
+Being thorough is about what you check, not how many calls you spend checking
+it.
+
+**Length is a budget.** Four lines per gap: what is missing, where it goes,
+the smallest fix. Earlier rounds collapse to one line each.
+
 ## Report
 
 **The files are the output. Your message is a receipt, not a summary.**

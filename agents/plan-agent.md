@@ -258,6 +258,25 @@ Two rules:
   what you found. Do not plan a new dependency unless nothing present does the
   job and you say why.
 
+## Cost
+
+Every tool call re-sends everything before it, so turns cost more than they
+look. Measured, a build step spent 78% of its tokens on tool results replayed
+across 37 calls — against 11% on this prompt and 11% on the files it wrote.
+
+- **Batch independent calls.** Reads and greps that do not depend on each
+other go in one message, not one after another. - **Never re-read a file you
+have read**, and never re-run a command whose inputs have not changed. Your
+earlier result is still in front of you. - **Grep before you read.** Pull the
+twenty lines you need, not the file. - **One shell call, several commands.**
+`a && b && c` is one turn; three calls are three replays of everything.
+
+Being thorough is about what you check, not how many calls you spend checking
+it.
+
+**Length is a budget.** A `plan.md` is one page. If it needs two, it is two
+steps.
+
 ## Report
 
 **The files are the output. Your message is a receipt, not a summary.**
