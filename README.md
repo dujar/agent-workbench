@@ -312,7 +312,28 @@ sixteen competitors — 570 each, where a table row is 60. Every agent now has a
 stated length budget, and the append-forever files collapse earlier rounds to
 one line.
 
-The third lever is yours: eight of ten agents run on Opus. Moving the
+The third lever is the model, and it was settled by testing rather than
+argument. The four grading agents were moved to Sonnet and one was moved back.
+
+`review-agent` reviewed a diff Opus had blocked, and returned `APPROVED`. It
+followed the procedure correctly — it even mutation-tested the suite by
+reverting the rounding term — but accepted `assert apply_tax(101, 5000) ==
+152` as pinning half-up. 151.5 rounds to 152 under half-up *and* under
+banker's rounding, so the assertion excludes floor and nothing else. Opus
+caught that and changed it to `103 → 155`, where the two rules disagree. A
+review that follows every step and misses the thing inside it is worse than a
+shallow one, because it reads as thorough.
+
+`verify-agent` on Sonnet went the other way in its own test: it caught a plan
+that returned floats against a codebase pinned to integer cents, found the
+convention by reading an earlier step's `findings.md` unprompted, and traced
+the consequence into the step that would consume it. So it stayed on Sonnet.
+
+The rule that came out of this is not "judgement needs Opus" — it is that
+reasoning about *numerical or semantic edge cases inside code* needs Opus,
+while reading documents for what is missing does not.
+
+Formerly: eight of ten agents ran on Opus. Moving the
 judgement-heavy ones to Sonnet is roughly a 5× cost cut, and it is a real
 trade — under test, `review-agent` on Opus mutation-tested a suite and caught a
 half-up assertion that did not actually discriminate. Try it and compare before

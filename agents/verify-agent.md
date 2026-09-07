@@ -2,7 +2,7 @@
 name: verify-agent
 description: Verifies a plan has no loose ends before it gets implemented. Checks every step against the real codebase for missing prerequisites, dangling references, unhandled call sites, and deferred decisions. Use after writing a plan and before executing it. Hand it the full plan text — it cannot see your conversation.
 tools: Read, Glob, Grep, Bash, Write
-model: opus
+model: sonnet
 effort: high
 ---
 

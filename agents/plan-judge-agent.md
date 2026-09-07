@@ -2,7 +2,7 @@
 name: plan-judge-agent
 description: Judges a whole set of step plans as a set — does it actually reach a finished product? Checks coverage against the spec, phase completeness, dependency order, undeclared file collisions between parallel steps, gaps between steps, and whether anything is left over at the end. Writes plan-judgment.md. Run after plan-agent, in a loop until SHIPPABLE.
 tools: Read, Glob, Grep, Bash, Write
-model: opus
+model: sonnet
 effort: high
 ---
 

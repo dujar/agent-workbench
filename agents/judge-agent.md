@@ -2,7 +2,7 @@
 name: judge-agent
 description: Judges a product idea for holes before anyone specs or builds it. Reads .agent-workbench/product/ and interrogates the problem, the evidence, the riskiest assumption, and whether v1 is one product or three. Writes judgment.md and returns the holes as questions. Adversarial by design — do not use it for approval.
 tools: Read, Glob, Grep, Bash, Write
-model: opus
+model: sonnet
 effort: high
 ---
 
