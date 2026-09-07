@@ -160,12 +160,12 @@ and cannot see each other.
 | Agent | Model | Does | Writes |
 |---|---|---|---|
 | `product-agent` | opus / high | Grills the idea into a spec, in six phases | `product/spec.md`, `journeys.md`, `state.md`, `screens/*.html` |
-| `market-agent` | sonnet / high | Web research: competitors, metrics, complaints | `product/market.md` |
-| `judge-agent` | opus / high | Adversarial holes in the idea | `product/judgment.md` |
+| `market-agent` | sonnet / medium | Web research: competitors, metrics, complaints | `product/market.md` |
+| `judge-agent` | sonnet / high | Adversarial holes in the idea | `product/judgment.md` |
 | `audit-agent` | sonnet / medium | One scope of thoroughness — `spec`, `journeys`, or `screens` | `product/audit-<scope>.md` |
 | `plan-agent` | **opus / max** | Phases and steps, one plan per feature | `step-*/plan.md`, the tracker |
-| `plan-judge-agent` | opus / high | Does the plan set reach a finished product, and can its parallel steps actually run in parallel? | `plan-judgment.md` |
-| `verify-agent` | opus / high | Does one plan survive contact with the code? | `step-*/verify.md` |
+| `plan-judge-agent` | sonnet / high | Does the plan set reach a finished product, and can its parallel steps actually run in parallel? | `plan-judgment.md` |
+| `verify-agent` | sonnet / high | Does one plan survive contact with the code? | `step-*/verify.md` |
 | `implement-agent` | opus / high | Builds one step on a branch | code, `step-*/findings.md` |
 | `review-agent` | opus / high | Reviews one branch against its plan | `step-*/review.md` |
 | `reconcile-agent` | opus / high | Folds findings into the plans that follow | edits `step-*/plan.md`, `reconciliation.md` |
@@ -196,6 +196,15 @@ branches and land as a merge conflict rather than an error. `plan-agent`
 declares those dependencies from the plans' *Scope* sections, and
 `plan-judge-agent` re-checks every parallel pair for a file in both.
 
+**Loops resume; they do not respawn.** A loop's second round sends a message
+to the same agent instead of spawning a new one, so it picks up from its own
+transcript already knowing the diff, the plan and what it flagged. Round two
+is "fixed findings 1 and 3, re-check" rather than a cold re-read of
+everything. A resumed reviewer still has to verify the fixes landed — resuming
+is not rubber-stamping — and a send that fails falls back to a fresh spawn,
+said out loud, because losing the loop is recoverable and silently skipping a
+round is not.
+
 **Every loop has a ceiling.** Market and judgment: two passes. Audit: two. Plan
 judgment: two. Review: three. Then it reports what is still open and moves on. A
 loop with no exit is how work dies in review instead of shipping.
@@ -216,12 +225,13 @@ of throat-clearing and pushing a perfectly good verdict to line three. Position
 is not a contract a language model reliably honours; a label is one it can
 satisfy while still being chatty.
 
-**Reasoning is tiered, not uniform.** The agents that hold a whole set in their
-head at once — planning, judging, verifying, reviewing, implementing — run on
-Opus at high effort, and `plan-agent` runs at `max`, because a bad plan is
-copied into every step that follows it. The two doing legwork rather than
-judgement, `market-agent` and `audit-agent`, run on Sonnet. Change either in the
-agent's frontmatter if that balance is wrong for you.
+**Reasoning is tiered, and the tiers were set by testing.** Six of ten agents
+run on Sonnet. Opus is reserved for the four that write or rewrite something
+everything downstream inherits — `plan-agent` (at `max`, because a bad plan is
+copied into every step after it), `implement-agent`, `reconcile-agent`,
+`product-agent` — plus `review-agent`, which was moved to Sonnet and moved
+back when it approved a diff Opus had blocked. The reasoning is under *What it
+costs*.
 
 **Green is a real answer.** Every judge and auditor is told to pass cleanly when
 the work holds. One that always finds something teaches everyone to ignore it.
@@ -333,7 +343,8 @@ The rule that came out of this is not "judgement needs Opus" — it is that
 reasoning about *numerical or semantic edge cases inside code* needs Opus,
 while reading documents for what is missing does not.
 
-Formerly: eight of ten agents ran on Opus. Moving the
+The result: six of ten agents run on Sonnet, where before all but two ran on
+Opus. Moving the
 judgement-heavy ones to Sonnet is roughly a 5× cost cut, and it is a real
 trade — under test, `review-agent` on Opus mutation-tested a suite and caught a
 half-up assertion that did not actually discriminate. Try it and compare before
