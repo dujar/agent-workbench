@@ -113,7 +113,9 @@ Write:
 
 - `.agent-workbench/product/market.md`
 
-Then return, and return only:
+Then return, and return only — plain text, no bold, no backticks around the
+verdict itself: a caller matching the line exactly should not have to strip
+markdown first:
 
 ```
 VERDICT: <one of: <n> competitors   |   NO SOURCES>

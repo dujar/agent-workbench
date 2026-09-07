@@ -87,6 +87,30 @@ Never commit to `$BASE`. If you were spawned into a worktree you are already
 isolated — the branch is still what matters, because the worktree goes away and
 the commits do not.
 
+### You may be resuming, not starting
+
+If `git log "$BASE"..HEAD` on this branch is non-empty, a previous run of this
+step already did work — an interruption, a crash, a rate limit, not a normal
+review round — and you are a fresh process with no memory of it. Do not start
+verify -> build -> review from the top; read what is already there first:
+
+- **A `review.md` with `VERDICT: APPROVED` (with or without non-blocking
+  notes)** — the step is done. Skip straight to *Merging*: rerun the tests to
+  confirm nothing regressed since, then merge.
+- **A `review.md` with a blocking count** — resume the review loop. Read every
+  round already in the file so you do not ask again what a prior round
+  answered, fix what is still open, invoke `review-agent` fresh (the earlier
+  instance is gone with the process that spawned it — address the new one by
+  its own `agentId` from here on), and tell it which rounds already happened.
+- **No `review.md`, but commits past `$BASE`** — the code exists; only review
+  never ran. Read the diff yourself before invoking `review-agent`, so you can
+  say in the dispatch what is already there rather than have it discover a
+  branch that looks unexpectedly non-empty.
+
+Restarting from zero on a branch that already has an `APPROVED` review does
+not just waste a round — it risks reimplementing code that passed review with
+a fresh attempt that has not.
+
 Commit as you go, one commit per meaningful piece. A single commit at the end
 makes review harder and bisecting impossible.
 
@@ -337,7 +361,9 @@ Write:
 
 - `<step dir>/findings.md`
 
-Then return, and return only:
+Then return, and return only — plain text, no bold, no backticks around the
+verdict itself: a caller matching the line exactly should not have to strip
+markdown first:
 
 ```
 VERDICT: <one of: MERGED <branch>   |   READY TO MERGE <branch>   |   BLOCKED <branch>   |   STOPPED <branch or a reason, if you stopped before branching>>

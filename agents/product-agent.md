@@ -391,7 +391,9 @@ Write:
 - `state.md` — the question queue under *Open*, every answer under *Answered*
   — plus `spec.md`, `journeys.md`, and the screens
 
-Then return, and return only:
+Then return, and return only — plain text, no bold, no backticks around the
+verdict itself: a caller matching the line exactly should not have to strip
+markdown first:
 
 ```
 VERDICT: <one of: READY   |   ROUND <n>, phase <p> — <k> questions queued>
