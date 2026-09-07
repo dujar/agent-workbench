@@ -40,10 +40,24 @@ if [ -d "$WB/product" ]; then
 fi
 
 # ---- tracker -------------------------------------------------------------
-TRACKER="$WB/step-feature-state.md"
 shopt -s nullglob
 STEPDIRS=("$WB"/step-*/)
 shopt -u nullglob
+
+TRACKER="$WB/step-feature-state.md"
+
+# ---- reconciliation: pending findings block every builder ----------------
+pending=""
+for d in "$WB"/step-*/; do
+  f="$d/findings.md"; [ -f "$f" ] || continue
+  # reconciled counts only when it carries a value; implement-agent writes it empty
+  v=$(grep -m1 -E '^reconciled:' "$f" | sed -E 's/^reconciled:[[:space:]]*//; s/#.*$//' | tr -d '[:space:]')
+  [ -z "$v" ] && pending="$pending $(basename "$d")"
+done
+if [ -n "$pending" ] && [ -f "$TRACKER" ] && grep -qE '\| *planned *\|' "$TRACKER"; then
+  say "reconciliation/"
+  bad "unreconciled findings in$pending, and steps are still planned — run reconcile-agent before spawning any builder, or every one of them stops"
+fi
 
 # ---- run log: invocation counts from outside the agents ------------------
 LOG="$WB/run-log.md"

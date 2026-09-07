@@ -115,6 +115,12 @@ Agent(subagent_type: "implement-agent", isolation: "worktree",
 Every step writes a `findings.md`: what was built, **where the plan was wrong**,
 what the next step inherits, what it left broken on purpose.
 
+A findings file counts as reconciled only when its `reconciled:` header carries
+a **date**. The line is written empty as a placeholder, so empty means pending —
+testing for the line's presence instead of its value deadlocks the pipeline:
+`reconcile-agent` skips every file and `implement-agent` blocks forever waiting
+for it.
+
 `reconcile-agent` reads the unreconciled ones and works out what they change for
 the steps not yet built — a stale path, a helper others should now reuse, an
 assumption that no longer holds — updates those plans, has `plan-judge-agent`

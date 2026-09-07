@@ -21,13 +21,25 @@ Read that step's `plan.md` first, then the diff against the integration branch
 than assuming:
 
 ```
-BASE=$(git rev-parse --abbrev-ref HEAD)   # run before the branch was created,
-                                          # or take it from the caller
+BASE=$(git rev-parse --abbrev-ref HEAD)
+case "$BASE" in
+  step-*) BASE=$(git for-each-ref --format='%(refname:short)' refs/heads \
+                 | grep -Ex 'main|master|develop|trunk' | head -1) ;;
+esac
+```
+
+```
 git diff "$BASE...<branch>"
 ```
 
-If the caller named the base branch, use that. Diffing against the wrong base
-shows you someone else's work and hides your own.
+You are invoked while the step branch is checked out, so `HEAD` is that branch
+— the `case` is what stops you diffing the branch against itself. That failure
+is silent and total: an empty diff has nothing wrong with it, so you would
+return `APPROVED` on code nobody read.
+
+**If `BASE` is empty, or equal to the branch you were asked to review, stop
+and say so.** Do not review an empty diff. If the caller named the base
+branch, use that in preference to anything you work out yourself.
 
 Review the diff, not the files. A file you did not see changed is not your
 business this round.
@@ -67,6 +79,8 @@ a finding regardless of whether it works.
   would have chosen differently does not. Mark every finding, and never block
   on taste — you are one of three rounds, and a round spent on preference is a
   round not spent on a bug.
+- **An empty diff is never `APPROVED`.** It means you are on the wrong base,
+  or the branch has no commits. Either way you have reviewed nothing — say so.
 - **`APPROVED` is a real answer.** If the step does what it said and the tests
   hold, approve it. A reviewer who always finds something teaches the
   implementer to merge past you.

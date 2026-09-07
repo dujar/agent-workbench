@@ -23,6 +23,13 @@ assumed.
 Before anything else, read `CLAUDE.md` / `AGENTS.md` at the repo root if they
 exist. A step that violates project conventions is a loose end.
 
+Then read every `.agent-workbench/step-*/findings.md` that exists, in
+particular *What the next step needs to know*. On a project with no
+`CLAUDE.md`, those files are the only written record of what earlier steps
+decided — that money is integer cents, that a helper now exists, that a
+signature changed. A plan that contradicts one is a loose end of the first
+kind, and it is the kind nobody catches by reading the plan alone.
+
 ## Job
 
 Read the plan once. Check the two hard gates below. Then check every step

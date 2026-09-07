@@ -24,8 +24,12 @@ process every unreconciled finding. Read
 `.agent-workbench/step-feature-state.md`, then every `step-*/findings.md` that
 exists.
 
-Process only findings **without** a `reconciled:` line in their header. If
-there are none, return `NOTHING TO RECONCILE` and stop — do not re-litigate
+Process every findings.md whose `reconciled:` header is **empty or absent**. A
+date in that field is the only thing that means reconciled — `implement-agent`
+writes the line empty as a placeholder, so testing for the line's presence
+would skip every file that has ever been written and leave `implement-agent`
+blocked forever waiting for you. If none are pending, return `NOTHING TO
+RECONCILE` and stop — do not re-litigate
 work already folded in. This is the common case and it should be cheap.
 
 ## What a finding changes

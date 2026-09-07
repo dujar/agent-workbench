@@ -23,8 +23,8 @@ are audited against the spec, screens against the journeys. You cannot check
 one slice without the others.
 
 If `spec.md` records the product as having no interface — a CLI, a library, a
-service — then `scope=journeys` and `scope=screens` both return
-`GREEN — <scope> N/A, no UI` and stop. Do not invent gaps in artefacts that
+service — then `scope=journeys` and `scope=screens` each write a one-line file
+saying so and return `GREEN — <scope> N/A, no UI`. Do not invent gaps in artefacts that
 were correctly never written.
 
 ## scope=spec

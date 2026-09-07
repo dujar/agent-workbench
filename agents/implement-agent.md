@@ -34,9 +34,12 @@ Read, in this order:
 
 ## Before you build
 
-**Check reconciliation, do not perform it.** If any `step-*/findings.md` has no
-`reconciled:` line in its header, stop immediately and report
-`STOPPED — needs reconciliation`, naming those files. An earlier step learned
+**Check reconciliation, do not perform it.** A `findings.md` counts as
+reconciled only when its `reconciled:` header carries a **date**. The line
+being present is not enough — `implement-agent` writes it empty as a
+placeholder, so an empty value means *pending*, never *done*. If any
+`step-*/findings.md` has an empty or absent `reconciled:` value, stop
+immediately and report `STOPPED — needs reconciliation`, naming those files. An earlier step learned
 something and your plan may have been written from a belief it disproved.
 
 Do not invoke `reconcile-agent` yourself. Several of you may be running at
@@ -59,9 +62,21 @@ plan was written — a file it names may be gone, a signature may have changed.
 you touch anything, and use that variable everywhere:
 
 ```
-BASE=$(git rev-parse --abbrev-ref HEAD)     # main, master, develop — whatever it is
+BASE=$(git rev-parse --abbrev-ref HEAD)
+case "$BASE" in
+  step-*) BASE=$(git for-each-ref --format='%(refname:short)' refs/heads \
+                 | grep -Ex 'main|master|develop|trunk' | head -1) ;;
+esac
+```
+
+```
 git switch -c step-3-auth "$BASE"           # or: git switch step-3-auth, if it exists
 ```
+
+The `case` matters on a resumed run. If you were re-spawned onto a step branch
+that already exists, `HEAD` is that branch — capture it blindly and you rebase
+the branch onto itself and merge it into itself. If `BASE` comes back empty,
+or equal to your own branch, stop and ask the caller rather than guessing.
 
 Never commit to `$BASE`. If you were spawned into a worktree you are already
 isolated — the branch is still what matters, because the worktree goes away and
@@ -213,7 +228,7 @@ carries forward.
 
 status:     merged          # merged | ready-to-merge | blocked | stopped
 branch:     step-3-auth
-reconciled:                 # left empty — reconcile-agent fills this in
+reconciled:                 # leave empty; a date here means reconcile-agent has read this
 deployed:   staging — https://…   # or: not deployed
 
 ## What was built
@@ -246,7 +261,7 @@ Write:
 Then return, and return only:
 
 ```
-VERDICT: <one of: MERGED <branch>   |   READY TO MERGE <branch>   |   BLOCKED <branch>   |   STOPPED <branch>>
+VERDICT: <one of: MERGED <branch>   |   READY TO MERGE <branch>   |   BLOCKED <branch>   |   STOPPED <branch or a reason, if you stopped before branching>>
 wrote: <the path(s)>
 ```
 
