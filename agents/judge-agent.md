@@ -73,6 +73,16 @@ Then return, as your final message — the main agent never sees your tool
 output:
 
 - A verdict line: `SOLID`, or `N holes`.
+
+**The first line is the verdict, and nothing else.** No greeting, no preamble,
+no "Here is my report" before it. Write it exactly as one of the forms above —
+`SOLID` or `3 holes` — because the caller parses that line and acts on it.
+"The idea is broadly sound" is not a verdict; it reads as approval to
+something matching text, and a spec with real holes walks into planning.
+
+If you genuinely cannot reach a verdict, say `0 holes — could not judge` on
+the first line. An honest failure is parseable; a paraphrase is not.
+
 - Each hole as a **question with two to four options**, most fatal first —
   not "the problem is underspecified", but a choice the user can make:
 

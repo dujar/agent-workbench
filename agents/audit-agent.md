@@ -76,6 +76,17 @@ were correctly never written.
 Your final message is the ONLY thing that reaches the caller — it never sees
 your tool output. Open with `GREEN — <scope>` or `<scope>: N gaps`.
 
+**The first line is the verdict, and nothing else.** No greeting, no preamble,
+no "Here is my report" before it. Write it exactly as one of the forms above —
+`GREEN — screens` or `screens: 4 gaps` — because the caller parses that line
+and acts on it. "Mostly fine, a couple of small things" is not a verdict; it
+reads as green to something matching text, and `READY` is returned on an
+unaudited spec.
+
+If you genuinely cannot reach a verdict, say `<scope>: could not audit` on the
+first line. An honest failure is parseable; a paraphrase is not.
+
+
 Then one line per gap, most blocking first:
 
 ```

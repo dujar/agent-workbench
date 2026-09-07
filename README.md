@@ -182,6 +182,12 @@ declares those dependencies from the plans' *Scope* sections, and
 judgment: two. Review: three. Then it reports what is still open and moves on. A
 loop with no exit is how work dies in review instead of shipping.
 
+**Verdicts are protocol, not prose.** Every agent that another agent acts on
+answers with a machine-readable token on its first line — `READY`, `GREEN`,
+`SHIPPABLE`, `CLEAN`, `APPROVED`, `READY TO MERGE`, `NOTHING TO RECONCILE` —
+and every caller is told to treat a first line it cannot parse as a failure,
+never as the good outcome. "Looks fine to me" is how an unreviewed diff merges.
+
 **Reasoning is tiered, not uniform.** The agents that hold a whole set in their
 head at once — planning, judging, verifying, reviewing, implementing — run on
 Opus at high effort, and `plan-agent` runs at `max`, because a bad plan is
@@ -191,6 +197,32 @@ agent's frontmatter if that balance is wrong for you.
 
 **Green is a real answer.** Every judge and auditor is told to pass cleanly when
 the work holds. One that always finds something teaches everyone to ignore it.
+
+## Running on a non-Anthropic backend
+
+The pipeline works on any Claude Code backend — GLM/Z.ai, a local model, an
+OpenAI-compatible proxy — because subagents, parallel worktrees and the
+`.agent-workbench/` state model are harness features, not model-API features.
+Two things need attention:
+
+**Model aliases.** Agent frontmatter accepts `opus`, `sonnet`, `haiku` or
+`inherit`, never a raw model id, so the tiering above is only real if those
+aliases map to different models. Point them somewhere distinct:
+
+```json
+"ANTHROPIC_DEFAULT_OPUS_MODEL":   "<your strong model>",
+"ANTHROPIC_DEFAULT_SONNET_MODEL": "<your fast model>"
+```
+
+Map both to the same id and every agent runs identically — which works, but the
+tiering is doing nothing.
+
+**Web search.** `market-agent` prefers `WebSearch`, which executes on the model
+provider's side and may not exist off Anthropic. It falls back to `WebFetch`
+(client-side, universal), then to any web-search MCP tool present, and returns
+`NO SOURCES` rather than writing a competitive landscape from memory. A failed
+search and an empty market are opposite findings; the agent will not conflate
+them.
 
 ## Should you commit `.agent-workbench/`?
 

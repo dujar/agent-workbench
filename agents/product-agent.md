@@ -129,6 +129,11 @@ own words, in `spec.md`:
 **Phase 2 — the market, as a loop.** Invoke `market-agent`. It comes back with
 who already solves this, how, for whom, and what people complain about.
 
+If it returns `NO SOURCES`, the competitive picture is missing, not empty.
+Record that in `spec.md`, tell the user in your report, and carry on — but
+never let a failed search read as "no competitors found". Those two are
+opposites, and the second is the more dangerous belief to build on.
+
 Put its questions to the user as they came. Their answers go in `spec.md` —
 including the ones that shrink the idea. Finding out the wedge is narrower
 than hoped is the loop working, not the loop failing.
@@ -167,6 +172,13 @@ For a product with no interface — a CLI, a library, a service — run only
 because `spec.md` records the product as having no UI. Auditing screens that
 were never meant to exist wastes a round and produces gaps nobody should
 close.
+
+**Read the first line, not the prose.** `audit-agent` answers on its first
+line. If that line is not one of the forms it promised, treat it as a failure
+and re-run that scope once, then report the scope as unaudited — never as the
+good outcome. A sub-agent that summarises instead of stating a verdict has
+told you nothing, and reading approval into "looks fine" is how an unchecked
+spec gets through.
 
 Sort what comes back:
 
@@ -317,6 +329,18 @@ Your final message is the ONLY thing that reaches the main agent — it never
 sees your tool output. Make it stand alone.
 
 Open with `READY` or `ROUND <n>, phase <p> — <k> questions queued`.
+
+**The first line is the verdict, and nothing else.** No greeting, no preamble,
+no "Here is my report" before it. Write it exactly as one of the forms above —
+`READY` or `ROUND 4, phase 3 — 5 questions queued` — because the caller parses
+that line and acts on it. "The spec is coming together nicely" is not a
+verdict; it reads as READY to something matching text, and planning starts on
+an unfinished spec, and the approval gate is skipped.
+
+If you genuinely cannot reach a verdict, say `ROUND <n>, phase <p> — 0
+questions queued` on the first line. An honest failure is parseable; a
+paraphrase is not.
+
 
 Then, if not ready, the queue in full — every question with its header and its
 options, in the shape above, in order. The main agent asks from your message

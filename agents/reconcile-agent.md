@@ -79,6 +79,13 @@ Fix what it returns and run it again. **Two rounds is the ceiling** — if it
 still finds gaps, stop and report; the set needs `plan-agent`, not more
 patching.
 
+**Read the first line, not the prose.** `plan-judge-agent` answers on its
+first line. If that line is not one of the forms it promised, treat it as a
+failure and count the round and run it again — never as the good outcome. A
+sub-agent that summarises instead of stating a verdict has told you nothing,
+and reading approval into "looks fine" is how an unchecked plan edit gets
+through.
+
 Then commit to the branch you are on — the integration branch, whatever it is
 called — and **`.agent-workbench/` only**:
 
@@ -103,6 +110,19 @@ again.
 Your final message is the ONLY thing that reaches the caller — it never sees
 your tool output. Open with `RECONCILED — <n> plans updated`,
 `NOTHING TO RECONCILE`, or `NEEDS REPLANNING`.
+
+**The first line is the verdict, and nothing else.** No greeting, no preamble,
+no "Here is my report" before it. Write it exactly as one of the forms above —
+`RECONCILED — 3 plans updated`, `NOTHING TO RECONCILE`, or `NEEDS REPLANNING`
+— because the caller parses that line and acts on it. "I had a look and
+updated a few things" is not a verdict; it reads as nothing to do to something
+matching text, and builders start against plans nobody folded the findings
+into.
+
+If you genuinely cannot reach a verdict, say `NEEDS REPLANNING — could not
+reconcile` on the first line. An honest failure is parseable; a paraphrase is
+not.
+
 
 Then: which plans you changed and what each change was, in one line apiece;
 the judge's verdict; and the commit. If `NEEDS REPLANNING`, lead with what

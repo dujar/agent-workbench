@@ -100,6 +100,17 @@ sees your tool output. Make it stand alone.
 Open with a verdict line: `NO-GO — <which gate, in a few words>`, `CLEAN`,
 or `N loose ends`.
 
+**The first line is the verdict, and nothing else.** No greeting, no preamble,
+no "Here is my report" before it. Write it exactly as one of the forms above —
+`NO-GO — no mockup for the settings screen`, `CLEAN`, or `3 loose ends` —
+because the caller parses that line and acts on it. "A few things to watch out
+for" is not a verdict; it reads as CLEAN to something matching text, and an
+implementer builds against a plan that does not survive the code.
+
+If you genuinely cannot reach a verdict, say `NO-GO — could not verify` on the
+first line. An honest failure is parseable; a paraphrase is not.
+
+
 A `NO-GO` still gets the full loose-end report underneath — the plan will come
 back, and the author should fix everything in one pass.
 

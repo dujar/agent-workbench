@@ -71,6 +71,16 @@ reappears is worth seeing twice.
 Then return, as your final message — the caller never sees your tool output:
 
 - `SHIPPABLE`, or `N gaps`.
+
+**The first line is the verdict, and nothing else.** No greeting, no preamble,
+no "Here is my report" before it. Write it exactly as one of the forms above —
+`SHIPPABLE` or `5 gaps` — because the caller parses that line and acts on it.
+"The plan set looks solid overall" is not a verdict; it reads as SHIPPABLE to
+something matching text, and building starts on a plan set with a hole in it.
+
+If you genuinely cannot reach a verdict, say `0 gaps — could not judge` on the
+first line. An honest failure is parseable; a paraphrase is not.
+
 - Each gap, most blocking first: what is missing, where it should go
   (before which step), and the smallest fix.
 - One line on what the plan set gets right, so the caller knows what not to

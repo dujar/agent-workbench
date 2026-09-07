@@ -50,6 +50,8 @@ plan was written — a file it names may be gone, a signature may have changed.
 - `NO-GO`, or loose ends that change what you would build: stop and report.
   Do not repair the plan yourself.
 - Minor gaps: note them in `findings.md` and carry on.
+- A first line that is neither `CLEAN`, `NO-GO`, nor `N loose ends`: treat it
+  as `NO-GO`. An unparseable verdict is not a pass.
 
 ## Your branch
 
@@ -138,7 +140,14 @@ the step directory.
 - Findings — fix them, commit, invoke it again. Do not argue a finding away in
   your report; either fix it or record why you did not, in `findings.md`.
 - **Three rounds is the ceiling.** If review still blocks after three, report
-  `BLOCKED` and stop. Something is wrong with the
+  `BLOCKED` and stop.
+
+**Read the first line, not the prose.** `review-agent` answers on its first
+line. If that line is not one of the forms it promised, treat it as a failure
+and treat the round as blocking and fix what it named — never as the good
+outcome. A sub-agent that summarises instead of stating a verdict has told you
+nothing, and reading approval into "looks fine" is how an unchecked diff gets
+through. Something is wrong with the
   plan, not with the attempt.
 
 ## Merging
@@ -214,6 +223,18 @@ Your final message is the ONLY thing that reaches the caller — it never sees
 your tool output. Open with one of `MERGED`, `READY TO MERGE`, `BLOCKED`, or
 `STOPPED`, and the branch name — the caller merges on that word and updates
 `step-feature-state.md` from it, so it has to be exact.
+
+**The first line is the verdict, and nothing else.** No greeting, no preamble,
+no "Here is my report" before it. Write it exactly as one of the forms above —
+`MERGED step-3-auth`, `READY TO MERGE step-3-auth`, `BLOCKED step-3-auth`, or
+`STOPPED step-3-auth` — because the caller parses that line and acts on it.
+"Finished the auth feature, branch is ready" is not a verdict; it reads as
+either MERGED or READY TO MERGE to something matching text, and the caller
+either merges twice or never merges at all.
+
+If you genuinely cannot reach a verdict, say `STOPPED <branch>` on the first
+line. An honest failure is parseable; a paraphrase is not.
+
 
 Then: what you built in three lines, how many review rounds it took, anything
 the plan got wrong, and the path to `findings.md`. If blocked or stopped, lead

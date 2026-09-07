@@ -82,6 +82,18 @@ so a finding that keeps coming back is visible.
 Then return, as your final message — the caller never sees your tool output:
 
 - `APPROVED`, or `N blocking, M non-blocking`.
+
+**The first line is the verdict, and nothing else.** No greeting, no preamble,
+no "Here is my report" before it. Write it exactly as one of the forms above —
+`APPROVED` or `2 blocking, 1 non-blocking` — because the caller parses that
+line and acts on it. "Looks good to me, just a couple of nits" is not a
+verdict; it reads as APPROVED to something matching text, and unreviewed code
+merges.
+
+If you genuinely cannot reach a verdict, say `1 blocking, 0 non-blocking —
+could not review` on the first line. An honest failure is parseable; a
+paraphrase is not.
+
 - Each finding, blocking first:
 
 ```
