@@ -173,12 +173,14 @@ because `spec.md` records the product as having no UI. Auditing screens that
 were never meant to exist wastes a round and produces gaps nobody should
 close.
 
-**Read the first line, not the prose.** `audit-agent` answers on its first
-line. If that line is not one of the forms it promised, treat it as a failure
-and re-run that scope once, then report the scope as unaudited — never as the
-good outcome. A sub-agent that summarises instead of stating a verdict has
-told you nothing, and reading approval into "looks fine" is how an unchecked
-spec gets through.
+**Read the verdict, not the prose.** `audit-agent` answers with a verdict.
+Scan the first few non-empty lines for one of the forms it promised — it is
+meant to be line one, and a stray preamble is not a reason to throw the round
+away. If none of those lines carries a verdict, treat it as a failure and
+re-run that scope once, then report the scope as unaudited — never as the good
+outcome. A sub-agent that summarises instead of stating a verdict has told you
+nothing, and reading approval into "looks fine" is how an unchecked spec gets
+through.
 
 Sort what comes back:
 
@@ -336,6 +338,12 @@ no "Here is my report" before it. Write it exactly as one of the forms above —
 that line and acts on it. "The spec is coming together nicely" is not a
 verdict; it reads as READY to something matching text, and planning starts on
 an unfinished spec, and the approval gate is skipped.
+
+Nothing precedes it — not a note on what you checked, not a confirmation of a
+grep that came back empty, not one line of context you think is helpful. All
+of that goes *after*. An agent under test opened with "Confirmed empty result
+— no screen contains any empty/loading/error markup" and put a perfectly good
+verdict on line two, where nothing was reading.
 
 If you genuinely cannot reach a verdict, say `ROUND <n>, phase <p> — 0
 questions queued` on the first line. An honest failure is parseable; a

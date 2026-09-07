@@ -45,6 +45,22 @@ shopt -s nullglob
 STEPDIRS=("$WB"/step-*/)
 shopt -u nullglob
 
+# ---- run log: invocation counts from outside the agents ------------------
+LOG="$WB/run-log.md"
+if [ -f "$LOG" ]; then
+  say "run-log/"
+  while read -r count agent; do
+    case "$agent" in
+      market-agent|judge-agent|plan-judge-agent|audit-agent) ceil=2 ;;
+      review-agent) ceil=3 ;;
+      *) continue ;;
+    esac
+    [ "$count" -gt "$ceil" ] \
+      && bad "$agent was invoked $count times, ceiling is $ceil — the loop is not closing"
+  done < <(awk -F'|' 'NR>2 && NF>3 {gsub(/ /,"",$3); if ($3!="") print $3}' "$LOG" \
+           | sort | uniq -c | awk '{print $1, $2}')
+fi
+
 if [ ${#STEPDIRS[@]} -eq 0 ]; then
   say "no step directories yet"
   exit $FAIL

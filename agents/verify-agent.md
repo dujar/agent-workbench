@@ -107,6 +107,12 @@ because the caller parses that line and acts on it. "A few things to watch out
 for" is not a verdict; it reads as CLEAN to something matching text, and an
 implementer builds against a plan that does not survive the code.
 
+Nothing precedes it — not a note on what you checked, not a confirmation of a
+grep that came back empty, not one line of context you think is helpful. All
+of that goes *after*. An agent under test opened with "Confirmed empty result
+— no screen contains any empty/loading/error markup" and put a perfectly good
+verdict on line two, where nothing was reading.
+
 If you genuinely cannot reach a verdict, say `NO-GO — could not verify` on the
 first line. An honest failure is parseable; a paraphrase is not.
 

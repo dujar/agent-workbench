@@ -90,6 +90,12 @@ line and acts on it. "Looks good to me, just a couple of nits" is not a
 verdict; it reads as APPROVED to something matching text, and unreviewed code
 merges.
 
+Nothing precedes it — not a note on what you checked, not a confirmation of a
+grep that came back empty, not one line of context you think is helpful. All
+of that goes *after*. An agent under test opened with "Confirmed empty result
+— no screen contains any empty/loading/error markup" and put a perfectly good
+verdict on line two, where nothing was reading.
+
 If you genuinely cannot reach a verdict, say `1 blocking, 0 non-blocking —
 could not review` on the first line. An honest failure is parseable; a
 paraphrase is not.

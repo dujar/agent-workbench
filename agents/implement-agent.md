@@ -140,15 +140,15 @@ the step directory.
 - Findings — fix them, commit, invoke it again. Do not argue a finding away in
   your report; either fix it or record why you did not, in `findings.md`.
 - **Three rounds is the ceiling.** If review still blocks after three, report
-  `BLOCKED` and stop.
+  `BLOCKED` and stop. Something is wrong with the plan, not with the attempt.
 
-**Read the first line, not the prose.** `review-agent` answers on its first
-line. If that line is not one of the forms it promised, treat it as a failure
-and treat the round as blocking and fix what it named — never as the good
-outcome. A sub-agent that summarises instead of stating a verdict has told you
-nothing, and reading approval into "looks fine" is how an unchecked diff gets
-through. Something is wrong with the
-  plan, not with the attempt.
+**Read the verdict, not the prose.** `review-agent` answers with a verdict.
+Scan the first few non-empty lines for one of the forms it promised — it is
+meant to be line one, and a stray preamble is not a reason to throw the round
+away. If none of those lines carries a verdict, treat it as a failure and
+treat the round as blocking and fix what it named — never as the good outcome.
+A sub-agent that summarises instead of stating a verdict has told you nothing,
+and reading approval into "looks fine" is how an unchecked diff gets through.
 
 ## Merging
 
@@ -249,6 +249,12 @@ no "Here is my report" before it. Write it exactly as one of the forms above —
 "Finished the auth feature, branch is ready" is not a verdict; it reads as
 either MERGED or READY TO MERGE to something matching text, and the caller
 either merges twice or never merges at all.
+
+Nothing precedes it — not a note on what you checked, not a confirmation of a
+grep that came back empty, not one line of context you think is helpful. All
+of that goes *after*. An agent under test opened with "Confirmed empty result
+— no screen contains any empty/loading/error markup" and put a perfectly good
+verdict on line two, where nothing was reading.
 
 If you genuinely cannot reach a verdict, say `STOPPED <branch>` on the first
 line. An honest failure is parseable; a paraphrase is not.

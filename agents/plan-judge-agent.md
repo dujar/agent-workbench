@@ -78,6 +78,12 @@ no "Here is my report" before it. Write it exactly as one of the forms above —
 "The plan set looks solid overall" is not a verdict; it reads as SHIPPABLE to
 something matching text, and building starts on a plan set with a hole in it.
 
+Nothing precedes it — not a note on what you checked, not a confirmation of a
+grep that came back empty, not one line of context you think is helpful. All
+of that goes *after*. An agent under test opened with "Confirmed empty result
+— no screen contains any empty/loading/error markup" and put a perfectly good
+verdict on line two, where nothing was reading.
+
 If you genuinely cannot reach a verdict, say `0 gaps — could not judge` on the
 first line. An honest failure is parseable; a paraphrase is not.
 

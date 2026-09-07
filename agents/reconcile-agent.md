@@ -79,12 +79,13 @@ Fix what it returns and run it again. **Two rounds is the ceiling** — if it
 still finds gaps, stop and report; the set needs `plan-agent`, not more
 patching.
 
-**Read the first line, not the prose.** `plan-judge-agent` answers on its
-first line. If that line is not one of the forms it promised, treat it as a
-failure and count the round and run it again — never as the good outcome. A
-sub-agent that summarises instead of stating a verdict has told you nothing,
-and reading approval into "looks fine" is how an unchecked plan edit gets
-through.
+**Read the verdict, not the prose.** `plan-judge-agent` answers with a
+verdict. Scan the first few non-empty lines for one of the forms it promised —
+it is meant to be line one, and a stray preamble is not a reason to throw the
+round away. If none of those lines carries a verdict, treat it as a failure
+and count the round and run it again — never as the good outcome. A sub-agent
+that summarises instead of stating a verdict has told you nothing, and reading
+approval into "looks fine" is how an unchecked plan edit gets through.
 
 Then commit to the branch you are on — the integration branch, whatever it is
 called — and **`.agent-workbench/` only**:
@@ -118,6 +119,12 @@ no "Here is my report" before it. Write it exactly as one of the forms above —
 updated a few things" is not a verdict; it reads as nothing to do to something
 matching text, and builders start against plans nobody folded the findings
 into.
+
+Nothing precedes it — not a note on what you checked, not a confirmation of a
+grep that came back empty, not one line of context you think is helpful. All
+of that goes *after*. An agent under test opened with "Confirmed empty result
+— no screen contains any empty/loading/error markup" and put a perfectly good
+verdict on line two, where nothing was reading.
 
 If you genuinely cannot reach a verdict, say `NEEDS REPLANNING — could not
 reconcile` on the first line. An honest failure is parseable; a paraphrase is

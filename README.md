@@ -245,6 +245,21 @@ Run it between stages — after planning, and after each merge. It is free and
 instant, and every one of those failures is invisible until something builds
 against it.
 
+## The run log
+
+After each agent returns, the caller records what it said:
+
+```
+scripts/wb-log.sh audit-agent "spec: 6 gaps" "round 1"
+scripts/wb-log.sh implement-agent "MERGED" "step-3-auth"
+```
+
+That appends to `.agent-workbench/run-log.md`, which is append-only — a verdict
+that keeps repeating is the thing you want to see. It is also the evidence
+`check-workbench.sh` uses to catch a loop that is not closing, which matters
+because the alternative is an agent counting its own rounds in a file it wrote
+itself. That is not a control.
+
 ## Should you commit `.agent-workbench/`?
 
 Usually yes. The plans, findings, and mockups are review material, and
