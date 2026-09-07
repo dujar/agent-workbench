@@ -348,6 +348,13 @@ VERDICT: <one of: READY   |   ROUND <n>, phase <p> — <k> questions queued>
 wrote: <the path(s)>
 ```
 
+The `<n>` and `<p>` in the verdict are copied from `state.md`'s `round:` and
+`phase:` lines after you have written them — never counted from memory. Under
+test a receipt said `ROUND 4` while the ledger it had just written said
+`round: 3`. The caller relays the receipt and the next invocation reads the
+ledger, so a drift between them is two agents working from different
+positions.
+
 On `READY`, add one line: the spec needs the user's approval, and on a yes the
 caller writes `approved: <today>` into `state.md`. `plan-agent` refuses to run
 without it.
