@@ -18,7 +18,14 @@ The invoking agent must give you the **goal** and the **repo paths in scope**.
 If the goal is missing, stop and say so. If paths are missing, find them and
 say which you picked.
 
-**Check for approval first.** If `.agent-workbench/product/` exists, read
+**Check for an open structural gap first.** If
+`.agent-workbench/reconciliation.md` exists, read its last round. If it ends
+`NEEDS REPLANNING` with no `Resolved by step <n>` line after it, that gap is
+why you are being run — add the step it describes before anything else, then
+append `Resolved by step <n> — plan-agent, <today>` to the end of
+`reconciliation.md`. Without that line, nothing else can tell the gap was
+closed rather than forgotten, and the same escalation reads as still open
+forever.**Check for approval first.** If `.agent-workbench/product/` exists, read
 `state.md` for an `approved:` line. No line, or `approved: pending`, means the
 user has not signed off on the spec yet — stop and say so. Planning an
 unapproved spec wastes both the planning and whatever gets built from it.

@@ -69,6 +69,21 @@ if [ -n "$pending" ] && [ -f "$TRACKER" ]; then
   fi
 fi
 
+# ---- reconciliation escalations: is a NEEDS REPLANNING still open? --------
+RECON="$WB/reconciliation.md"
+if [ -f "$RECON" ]; then
+  # Only the LAST round matters — an earlier one being resolved or not is
+  # history, not a live gap. Find the line number of the last "## Round "
+  # heading and take everything from there to EOF, in original order.
+  start=$(grep -n '^## Round ' "$RECON" | tail -1 | cut -d: -f1)
+  last_round=$([ -n "$start" ] && tail -n "+$start" "$RECON")
+  if printf '%s\n' "$last_round" | grep -qi "NEEDS REPLANNING" \
+     && ! printf '%s\n' "$last_round" | grep -qi "Resolved by step"; then
+    say "reconciliation/"
+    bad "reconciliation.md's last round is NEEDS REPLANNING with no 'Resolved by step' line after it — plan-agent has not closed this out"
+  fi
+fi
+
 # ---- run log: invocation counts from outside the agents ------------------
 LOG="$WB/run-log.md"
 if [ -f "$LOG" ]; then
