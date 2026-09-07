@@ -85,6 +85,12 @@ the commits do not.
 Commit as you go, one commit per meaningful piece. A single commit at the end
 makes review harder and bisecting impossible.
 
+**`status:` is the one line you cannot write on the branch.** You do not know
+you merged until you have merged, so write `ready-to-merge` in the branch copy
+and correct it to `merged` on the base branch afterwards, as one ordinary
+commit. Do not go back to the branch to fix it and merge a second time — that
+spends a whole merge commit on one word, and ten steps leave ten of them.
+
 Commit your own step's workbench files — `verify.md`, `review.md`,
 `findings.md` — along with the code, so they travel with the merge and the
 next step can read what yours learned. Leaving them untracked leaves the
