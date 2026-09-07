@@ -63,6 +63,12 @@ number.
 
 You may not touch a `done` step's plan. It is a record of what was built.
 
+In `step-feature-state.md` you may update **one thing**: the `plan-judge:`
+counter in the header, because you are the one who ran it and an unrecorded
+run is a ceiling nobody can enforce. Rows, phases, dependencies and the status
+column are not yours — `plan-agent` owns the first three, the orchestrator
+owns the last.
+
 Every edit carries its reason, in the plan, where the next reader will hit it:
 
 ```markdown
@@ -126,13 +132,20 @@ Write:
 Then return, and return only:
 
 ```
-VERDICT: <one of: RECONCILED — <n> plans updated   |   NOTHING TO RECONCILE   |   NEEDS REPLANNING>
+VERDICT: <one of: RECONCILED — <n> plans updated   |   NOTHING TO RECONCILE   |   NEEDS REPLANNING — blocking   |   NEEDS REPLANNING — <step> still buildable>
 wrote: <the path(s)>
 ```
 
-On `NEEDS REPLANNING`, add one line naming the structural change needed. The
-caller has to decide whether to run `plan-agent`, and cannot decide that from
-a path.
+`NEEDS REPLANNING` needs its second half, always. **Blocking** means nothing
+should be built until `plan-agent` runs. **`<step> still buildable`** means
+the plan set has structural gaps but the judge confirmed none of them reach
+the step about to start, so building continues while replanning is queued.
+Those are opposite instructions, and a bare `NEEDS REPLANNING` reads as the
+first. Do not leave the difference to the prose underneath — a caller acting
+on the verdict alone would stop a build that was fine.
+
+Either way, add one line naming the structural change needed. The caller has
+to decide whether to run `plan-agent`, and cannot decide that from a path.
 
 Nothing else. Do not restate your findings, recap your reasoning, or explain
 what you did — the caller can open the file, and a summary that drifts from
