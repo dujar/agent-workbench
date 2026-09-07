@@ -100,21 +100,29 @@ sees your tool output. Make it stand alone.
 Open with a verdict line: `NO-GO — <which gate, in a few words>`, `CLEAN`,
 or `N loose ends`.
 
-**The first line is the verdict, and nothing else.** No greeting, no preamble,
-no "Here is my report" before it. Write it exactly as one of the forms above —
-`NO-GO — no mockup for the settings screen`, `CLEAN`, or `3 loose ends` —
-because the caller parses that line and acts on it. "A few things to watch out
-for" is not a verdict; it reads as CLEAN to something matching text, and an
-implementer builds against a plan that does not survive the code.
+**Say the verdict on a labelled line.** On a line of its own, write:
 
-Nothing precedes it — not a note on what you checked, not a confirmation of a
-grep that came back empty, not one line of context you think is helpful. All
-of that goes *after*. An agent under test opened with "Confirmed empty result
-— no screen contains any empty/loading/error markup" and put a perfectly good
-verdict on line two, where nothing was reading.
 
-If you genuinely cannot reach a verdict, say `NO-GO — could not verify` on the
-first line. An honest failure is parseable; a paraphrase is not.
+    VERDICT: <one of the forms above>
+
+
+so `CLEAN` and `VERDICT: NO-GO — no mockup for the settings screen`.
+
+Put it first, before anything else — but **the label is the contract, not the
+position.** The caller greps for a line starting `VERDICT:` and acts on what
+follows it. A report without that line has told the caller nothing, whatever
+else it says.
+
+The rule exists because position alone does not survive. Tested, this agent
+opened with "Confirmed: day.html is referenced in journeys.md" and "Now
+compiling the report per the exact format required", pushing a perfectly good
+verdict to line three, where nothing was reading. With a label, that preamble
+costs nothing.
+
+And write a verdict, not a mood: "Mostly fine, a couple of small things" after
+the label is as useless as no label. If you genuinely cannot reach one, the
+verdict is the failure itself — an honest failure is parseable; a paraphrase
+is not.
 
 
 A `NO-GO` still gets the full loose-end report underneath — the plan will come

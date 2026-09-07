@@ -184,11 +184,14 @@ declares those dependencies from the plans' *Scope* sections, and
 judgment: two. Review: three. Then it reports what is still open and moves on. A
 loop with no exit is how work dies in review instead of shipping.
 
-**Verdicts are protocol, not prose.** Every agent that another agent acts on
-answers with a machine-readable token on its first line — `READY`, `GREEN`,
-`SHIPPABLE`, `CLEAN`, `APPROVED`, `READY TO MERGE`, `NOTHING TO RECONCILE` —
-and every caller is told to treat a first line it cannot parse as a failure,
-never as the good outcome. "Looks fine to me" is how an unreviewed diff merges.
+**Verdicts are labelled, not positional.** Every agent another agent acts on
+emits a line starting `VERDICT:` — `VERDICT: GREEN — screens`,
+`VERDICT: 2 blocking, 1 non-blocking`, `VERDICT: MERGED step-3-auth` — and
+callers grep for that line rather than reading the first one. This started as a
+first-line rule and was changed after testing: agents kept opening with a line
+of throat-clearing and pushing a perfectly good verdict to line three. Position
+is not a contract a language model reliably honours; a label is one it can
+satisfy while still being chatty.
 
 **Reasoning is tiered, not uniform.** The agents that hold a whole set in their
 head at once — planning, judging, verifying, reviewing, implementing — run on

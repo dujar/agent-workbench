@@ -180,13 +180,13 @@ count is how the loop ends.
 Do not report finished until the judge returns `SHIPPABLE`, or you have hit
 the ceiling and said so.
 
-**Read the verdict, not the prose.** `plan-judge-agent` answers with a
-verdict. Scan the first few non-empty lines for one of the forms it promised —
-it is meant to be line one, and a stray preamble is not a reason to throw the
-round away. If none of those lines carries a verdict, treat it as a failure
-and count the round and run it again — never as the good outcome. A sub-agent
-that summarises instead of stating a verdict has told you nothing, and reading
-approval into "looks fine" is how an unchecked plan set gets through.
+**Find the verdict, do not read for it.** `plan-judge-agent` answers on a line
+starting `VERDICT:`. Look for that line anywhere in its report and act on what
+follows — preamble above it is noise, not a failure. If there is no such line
+at all, treat it as a failure and count the round and run it again, never as
+the good outcome. A sub-agent that summarises instead of stating a verdict has
+told you nothing, and reading approval into "looks fine" is how an unchecked
+plan set gets through.
 
 ### Writing each plan
 
