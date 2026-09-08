@@ -47,6 +47,13 @@ projects that do not need it.
        │  (one per step, in parallel worktrees)
        ▼
    reconcile-agent   (folds each step's findings back into the plans that follow)
+       │
+       ▼
+   shipped — spec.md is now frozen
+       │
+       ╰──> a new feature request re-enters at product-agent, as an epic
+            instead of new-product discovery — see *Evolving a shipped
+            product* below, then the loop above repeats for just that epic
 ```
 
 ### 1. Specify — `product-agent`
@@ -67,6 +74,10 @@ you approve rather than compose. Phases 2 and 3 are loops, capped at two passes
 each — a spec that dies in research never ships.
 
 It returns `READY` and stops. Nothing gets planned until you say yes.
+
+Once `spec.md` is approved, it is frozen — this same six-phase grilling runs
+again for any later feature request, but scoped to a new epic file instead of
+reopening `spec.md`. See *Evolving a shipped product*.
 
 ### 2. Approve
 
@@ -149,9 +160,12 @@ follows. A later request to add, change, or extend the product is a new
 Invoke `product-agent` the same way. It notices `spec.md` is already
 `approved` and treats the request as an epic instead of new-product discovery:
 
-``` .agent-workbench/product/ epics/ epic-2-notifications.md   one file per
-post-v1 change epics-state.md               the ledger — every epic and its
-status ```
+```
+.agent-workbench/product/
+  epics/
+    epic-2-notifications.md   one file per post-v1 change
+  epics-state.md               the ledger — every epic and its status
+```
 
 The same six phases run, scoped to the epic file instead of `spec.md` —
 `state.md` tracks which one via a `target:` line, and `market-agent`,
