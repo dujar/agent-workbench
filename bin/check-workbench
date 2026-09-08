@@ -85,19 +85,32 @@ if [ -f "$RECON" ]; then
 fi
 
 # ---- run log: invocation counts from outside the agents ------------------
+# Every ceiling in this system is per LOOP, not per project: audit-agent gets
+# two rounds against each of three scopes, review-agent three rounds against
+# each step, market and judge two against each target. Counting an agent's
+# rows in total therefore fails on every healthy run — three parallel audit
+# scopes is one clean round, not a runaway loop. So the count is grouped by
+# the note column, which the caller writes as the loop's identity: the scope
+# for audit-agent, the step dir for review-agent, the target for market and
+# judge. A note that drifts splits one loop into two and undercounts — this
+# fails open, which is the right direction for a check whose whole value is
+# that people still read it.
 LOG="$WB/run-log.md"
 if [ -f "$LOG" ]; then
   say "run-log/"
-  while read -r count agent; do
+  while IFS=$'\t' read -r count agent loop; do
     case "$agent" in
       market-agent|judge-agent|plan-judge-agent|audit-agent) ceil=2 ;;
       review-agent) ceil=3 ;;
       *) continue ;;
     esac
     [ "$count" -gt "$ceil" ] \
-      && bad "$agent was invoked $count times, ceiling is $ceil — the loop is not closing"
-  done < <(awk -F'|' 'NR>2 && NF>3 {gsub(/ /,"",$3); if ($3!="") print $3}' "$LOG" \
-           | sort | uniq -c | awk '{print $1, $2}')
+      && bad "$agent ran $count times against '${loop:-—}', ceiling is $ceil — the loop is not closing"
+  done < <(awk -F'|' 'NR>2 && NF>3 {
+             a=$3; n=$5; gsub(/^ +| +$/,"",a); gsub(/^ +| +$/,"",n)
+             if (a!="") print a "\t" n }' "$LOG" \
+           | sort | uniq -c \
+           | sed -E 's/^ *([0-9]+) /\1\t/')
 fi
 
 if [ ${#STEPDIRS[@]} -eq 0 ]; then

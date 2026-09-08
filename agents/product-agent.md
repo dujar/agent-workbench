@@ -115,8 +115,8 @@ When an epic reaches `READY`:
 1. Move `state.md`'s `## Open` / `## Answered` / `## Retired` / `## Deferred`
    sections into a `## Discovery record` heading at the end of the epic file
    itself. A finished epic passes the same self-sufficiency test a `plan.md`
-   does — then clear those sections in `state.md` so the next thing you work
-   on starts clean.
+   does — then clear those sections in `state.md`, and reset `phase`, `round`
+   and the run counters, so the next thing you work on starts clean.
 2. Set that row's status to `ready` in `epics-state.md`.
 3. Wait for the user's approval exactly as for a first product — write
    `approved: <date>` next to the row, not into `spec.md`.
@@ -195,6 +195,10 @@ whatever it names, not on `spec.md` by default.
   *Retired* with the reason. Deleting it means someone asks it again.
 - **The run counters are how the loops end.** Phase 2 and phase 3 each get two
   passes; without the counts here you cannot tell a second pass from a sixth.
+  They count runs against **the current `target`**, not the project's history —
+  so reset them to zero the moment you start a new epic, alongside clearing the
+  Q&A sections. Carried forward, the second epic starts at four and reads as a
+  loop that never closed, to you and to `check-workbench` alike.
 - **Never drop the `approved:` line.** Somebody else writes it when the user
   signs off, and you rewrite this file whole every round. Read it, keep it,
   write it back exactly as you found it. Erasing an approval sends `plan-agent`
@@ -277,8 +281,9 @@ because `spec.md` records the product as having no UI. Auditing screens that
 were never meant to exist wastes a round and produces gaps nobody should
 close.
 
-**Find the verdict, do not read for it.** `audit-agent` answers on a line
-starting `VERDICT:`. Look for that line anywhere in its report and act on what
+**Find the verdict, do not read for it.** This holds for every agent you
+invoke — `market-agent` and `judge-agent` as much as `audit-agent`. Each
+answers on a line starting `VERDICT:`. Look for that line anywhere in its report and act on what
 follows — preamble above it is noise, not a failure. The findings themselves are in `.agent-workbench/product/audit-<scope>.md`, not in the message — open it. If there is no such line
 at all, treat it as a failure and re-run that scope once, then report the
 scope as unaudited, never as the good outcome. A sub-agent that summarises

@@ -50,11 +50,16 @@ then re-spawns you.
 Then invoke `verify-agent` on this step's plan. The codebase has moved since the
 plan was written — a file it names may be gone, a signature may have changed.
 
+**Find the verdict, do not read for it.** `verify-agent` answers on a line
+starting `VERDICT:`. Look for that line anywhere in its report and act on what
+follows — preamble above it is noise, not a failure. The loose ends themselves
+are in the `verify.md` its receipt names, not in the message — open it.
+
 - `NO-GO`, or loose ends that change what you would build: stop and report.
   Do not repair the plan yourself.
 - Minor gaps: note them in `findings.md` and carry on.
-- A first line that is neither `CLEAN`, `NO-GO`, nor `N loose ends`: treat it
-  as `NO-GO`. An unparseable verdict is not a pass.
+- No `VERDICT:` line at all, or one carrying none of `CLEAN`, `NO-GO`,
+  `<n> loose ends`: treat it as `NO-GO`. An unparseable verdict is not a pass.
 
 ## Your branch
 
@@ -304,13 +309,21 @@ You never write the tracker. Report your outcome; the caller records it.
 ## findings.md
 
 Write `.agent-workbench/step-<n>-<feature>/findings.md` before you report,
-whatever the outcome — merged, blocked, or stopped. It is the only thing that
-carries forward.
+whenever you built anything — merged, ready to merge, or blocked. It is the
+only thing that carries forward.
+
+**Write nothing if you stopped before branching.** A dependency that is not
+`done`, findings that need reconciling, a `NO-GO` from `verify-agent` — you
+have learned nothing about the code, so there is nothing to carry forward, and
+a `findings.md` with an empty `reconciled:` line is not inert. It is exactly
+what makes `reconcile-agent` run and every other builder stop. Writing one
+because you were blocked *by* that rule arms it a second time, for a step that
+never ran. Report the stop; the caller acts on the verdict.
 
 ```markdown
 # Step 3 — auth
 
-status:     merged          # merged | ready-to-merge | blocked | stopped
+status:     merged          # merged | ready-to-merge | blocked
 branch:     step-3-auth
 reconciled:                 # leave empty; a date here means reconcile-agent has read this
 deployed:   staging — https://…   # or: not deployed

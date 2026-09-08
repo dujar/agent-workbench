@@ -101,8 +101,11 @@ merges, so it lives on disk rather than in a message:
 ```markdown
 ## Next
 
-1. If any `step-*/findings.md` has no `reconciled:` line, run `reconcile-agent`
-   first — once, alone, with no builders running.
+1. If any `step-*/findings.md` has a `reconciled:` line with no date after it,
+   run `reconcile-agent` first — once, alone, with no builders running. It is
+   the **value** that matters, never the line: the line is written empty as a
+   placeholder, so testing whether it exists is always true and reconciliation
+   never runs, while every builder stops waiting for it.
 2. Runnable now: **step 3, step 4** (dependencies all `done`). Nothing else — a
    step whose dependency is still `planned`, `blocked`, or mid-build is not
    ready, and spawning it builds on code that does not exist yet. Both go at
@@ -114,7 +117,7 @@ merges, so it lives on disk rather than in a message:
    next: two branches that each pass can merge into something that does not,
    and the merge is the only place that shows. Red base means revert that
    merge and mark the step `blocked`.
-4. Set the row's status, run `scripts/check-workbench.sh`, and go back to 1.
+4. Set the row's status, run `check-workbench`, and go back to 1.
 ```
 
 Name the actual step numbers in point 2, not a rule for finding them.

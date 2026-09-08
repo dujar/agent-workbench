@@ -14,9 +14,7 @@ compaction, a closed laptop, and a colleague picking it up on Monday.
 /plugin install agent-workbench
 ```
 
-Or from a local clone — which is what you want while editing the agents, since
-a directory source picks up your changes on the next session instead of needing
-a push and a `marketplace update`:
+Or from a local clone:
 
 ```
 claude plugin marketplace add /path/to/this/repo
@@ -25,6 +23,33 @@ claude plugin install agent-workbench@agent-workbench --yes
 
 Either way, **restart the session**: agent definitions load at startup.
 `claude --continue` resumes the conversation with them available.
+
+### Editing the agents
+
+A directory source does **not** hand your working copy to the session. Install
+copies the plugin into a version-keyed cache
+(`~/.claude/plugins/cache/<marketplace>/<plugin>/<version>/`) and the session
+loads that. Edit `agents/*.md`, restart, and you get the snapshot from install
+day — silently, with no warning that the file you just changed is not the file
+running.
+
+`claude plugin update` does not rescue you either: it compares versions, and an
+unchanged `plugin.json` means "already at the latest version". So the loop is
+**bump, update, restart**:
+
+```
+# edit agents/*.md, then:
+$EDITOR .claude-plugin/plugin.json     # bump "version"
+claude plugin update agent-workbench   # copies the new version into the cache
+# restart the session
+```
+
+Skip the bump and the update is a no-op. To check what is actually loaded,
+diff the cache against the repo:
+
+```
+diff -rq ~/.claude/plugins/cache/agent-workbench/agent-workbench/*/agents agents
+```
 
 `claude plugin details agent-workbench` shows the component inventory and what
 it costs — roughly 1.2k tokens always-on for the ten descriptions, and 1.3k–5.3k
@@ -188,13 +213,17 @@ a step back to why it exists is a grep, not a separate index to keep in sync.
 You (or the main agent) drive the outer loop. The subagents cannot talk to you
 and cannot see each other.
 
-1. Any `findings.md` without a `reconciled:` line → run `reconcile-agent` once,
-   with no builders running.
+1. Any `findings.md` whose `reconciled:` line carries no date → run
+   `reconcile-agent` once, with no builders running. The value, never the line.
 2. Spawn one `implement-agent` per ready step, in parallel, `isolation: "worktree"`.
 3. A builder returning `READY TO MERGE` has a rebased, reviewed branch. **Merge
    those one at a time** — git refuses to update a branch checked out in another
    worktree, and two merges at once is how a green build disappears.
 4. Set that row's status in `step-feature-state.md` to `done`, or `blocked`.
+   A `STOPPED` builder is neither — it never branched, so it wrote no
+   `findings.md` and changed nothing. Leave the row `planned`, clear what it
+   named, and re-spawn it. Marking it `blocked` strands every step that
+   depends on it, for a step that has not been attempted.
    Loop back to 1.
 
 `plan-agent` prints exactly this list, with your step numbers filled in.
@@ -214,7 +243,7 @@ and cannot see each other.
 | `review-agent` | opus / high | Reviews one branch against its plan | `step-*/review.md` |
 | `reconcile-agent` | opus / high | Folds findings into the plans that follow | edits `step-*/plan.md`, `reconciliation.md` |
 
-Plus `scripts/check-workbench.sh` — no model, just invariants. See below.
+Plus `check-workbench` — no model, just invariants. See below.
 
 ## Conventions the agents share
 
@@ -322,8 +351,12 @@ The agents write markdown that other agents parse, so drift is otherwise
 silent. One script catches the mechanical half, with no model involved:
 
 ```
-scripts/check-workbench.sh            # or: scripts/check-workbench.sh path/to/.agent-workbench
+check-workbench                  # or: check-workbench path/to/.agent-workbench
 ```
+
+Both scripts live in the plugin's `bin/`, which Claude Code puts on `PATH`, so
+they run by bare name from any project — there is nothing to copy in. From a
+clone without the plugin installed, call them by path: `bin/check-workbench`.
 
 It fails loudly on: a tracker row whose directory is missing, a dependency on a
 step that does not exist or is built later, a status nothing ever writes, a
@@ -340,15 +373,25 @@ against it.
 After each agent returns, the caller records what it said:
 
 ```
-scripts/wb-log.sh audit-agent "spec: 6 gaps" "round 1"
-scripts/wb-log.sh implement-agent "MERGED" "step-3-auth"
+wb-log audit-agent "spec: 6 gaps" spec
+wb-log review-agent "2 blocking" step-3-auth
+wb-log implement-agent "MERGED" step-3-auth
 ```
 
 That appends to `.agent-workbench/run-log.md`, which is append-only — a verdict
 that keeps repeating is the thing you want to see. It is also the evidence
-`check-workbench.sh` uses to catch a loop that is not closing, which matters
+`check-workbench` uses to catch a loop that is not closing, which matters
 because the alternative is an agent counting its own rounds in a file it wrote
 itself. That is not a control.
+
+**The third field is the loop, not the round.** Every ceiling here is per loop:
+two audit rounds *per scope*, three review rounds *per step*, two market and
+judgment rounds *per target*. So `check-workbench` counts rows grouped by
+`(agent, loop)` — write the scope for `audit-agent`, the step directory for
+`review-agent`, the target for `market-agent` and `judge-agent`, and keep it
+byte-identical across a loop's rounds. Counted per agent instead, three
+parallel audit scopes read as a runaway loop and the check fails on every
+healthy project, which is how a check stops being read.
 
 ## What it costs
 

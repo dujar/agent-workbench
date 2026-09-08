@@ -3,13 +3,21 @@
 # agent returns, so there is an external record of who ran and what they said —
 # independent of the counters agents keep about themselves.
 #
-# Usage: scripts/wb-log.sh <agent> <verdict> [note...]
-#   scripts/wb-log.sh audit-agent "spec: 6 gaps" "round 1"
-#   scripts/wb-log.sh implement-agent "MERGED" "step-3-auth"
+# Usage: wb-log <agent> <verdict> [loop]
+#   wb-log audit-agent "spec: 6 gaps" spec
+#   wb-log review-agent "2 blocking" step-3-auth
+#   wb-log implement-agent "MERGED" step-3-auth
+#
+# The third field is the LOOP the agent ran in, not the round number. Ceilings
+# here are per loop — two audit rounds per scope, three review rounds per step
+# — so check-workbench counts rows grouped by (agent, loop). Write the scope
+# for audit-agent, the step dir for review-agent, the target for market-agent
+# and judge-agent. Keep it identical across a loop's rounds or the count
+# splits and the ceiling stops being enforced.
 
 set -uo pipefail
 WB="${WB:-.agent-workbench}"
-[ $# -ge 2 ] || { echo "usage: $0 <agent> <verdict> [note...]" >&2; exit 2; }
+[ $# -ge 2 ] || { echo "usage: $0 <agent> <verdict> [loop]" >&2; exit 2; }
 
 agent=$1; verdict=$2; shift 2; note="${*:-}"
 mkdir -p "$WB"
