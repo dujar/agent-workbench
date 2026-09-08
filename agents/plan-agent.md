@@ -116,11 +116,26 @@ an implementer needs for that feature and nothing else.
 - screens:  ../product/screens/login.html, ../product/signup.html
 - theme:    ../product/theme.css
 - exists:   src/auth/session.rs:40
+- learned:  ../step-2-discount/findings.md
 ```
 
 **Link, never copy.** A copied mockup gets edited in one place and goes stale
 in the other, and nobody finds out until the built screen matches neither.
 One click away is close enough.
+
+**`learned:` points at the `findings.md` of every step this one depends on.**
+The exact path is `../step-<n>-<feature>/findings.md`, matching the directory
+name in the tracker. The first time you write a plan, the dependency has not
+been built yet, so there is no `findings.md` to link — write the Resources
+block without it. `reconcile-agent` adds this line later, once that step
+merges and its findings actually exist; if you are revising a plan whose
+dependency is already `done`, add it yourself rather than waiting.
+
+This is not optional decoration. A step's prose can say "reuse the session
+helper from step 2," but a plan that never says *where step 2 wrote that
+down* forces the implementer to either take the sentence on faith or go
+hunting for the file themselves — and the whole point of a plan being
+self-sufficient is that they should not have to do either.
 
 ## Job
 

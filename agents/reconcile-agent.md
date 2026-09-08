@@ -43,6 +43,13 @@ yet `done`. Four things carry:
 2. **"What the next step needs to know."** A helper that now exists, a schema
    field, a convention someone set. Any later plan that describes building
    that thing again must now say *reuse it*, with the path.
+
+   **Add a `learned:` line to that plan's Resources block, pointing at the
+   findings.md you are folding in — `../step-<n>-<feature>/findings.md` —
+   alongside the prose.** The prose is your summary; the link is the source it
+   was summarised from. A later reader who trusts your summary too far, or
+   doubts it, needs the file it came from one click away, not a citation they
+   have to go find themselves.
 3. **"Out of scope, left broken."** A later plan assuming that thing works is
    planning on sand. Say so in the plan, explicitly.
 4. **Moved ground.** A file renamed, a signature changed, a shortcut with a
