@@ -18,29 +18,43 @@ and duplicated findings waste the round.
 The prompt must name **one** scope: `spec`, `journeys`, or `screens`. If it
 names none, say so and stop rather than guessing.
 
-Read `.agent-workbench/product/` — all of it, whatever your scope. Journeys
-are audited against the spec, screens against the journeys. You cannot check
-one slice without the others.
+The prompt may also name a `target` — `.agent-workbench/product/spec.md` by
+default, or an epic file such as
+`.agent-workbench/product/epics/epic-2-notifications.md`. For `scope=spec`
+this is the document you audit. For `scope=journeys` it is whose goals you
+check for a journey — an epic's own goals, not every goal the shipped product
+ever had; those were audited when that goal's target was current, and
+re-litigating them wastes the round.
 
-If `spec.md` records the product as having no interface — a CLI, a library, a
-service — then `scope=journeys` and `scope=screens` each write a one-line file
-saying so and return `GREEN — <scope> N/A, no UI`. Do not invent gaps in artefacts that
-were correctly never written.
+Read `.agent-workbench/product/` — all of it, whatever your scope. Journeys
+are audited against the target, screens against the journeys. You cannot
+check one slice without the others.
+
+If `target` records the product as having no interface — a CLI, a library, a
+service — then `scope=journeys` and
+`scope=screens` each write a one-line file saying so and return `GREEN —
+<scope> N/A, no UI`. Do not invent gaps in artefacts that were correctly never
+written.
 
 ## scope=spec
 
 - Tech is named and settled: language, framework, storage, auth, hosting —
   each either chosen or explicitly "existing, unchanged". No placeholders:
-  grep for `TBD`, `TODO`, `later`, `etc.`, `and so on`, `to be decided`.
-- Every answer in `state.md` under *Answered* landed in `spec.md`. A decision
+  grep for `TBD`, `TODO`, `later`, `etc.`, `and so on`, `to be decided`. An
+  epic auditing `target=epics/epic-2-x.md` inherits the shipped stack — this
+  bullet only fires if the epic itself introduces something new and leaves
+  it unnamed.
+- Every answer in `state.md` under *Answered* landed in `target`. A decision
   the user made and nobody wrote down is the most expensive gap here.
-- Every hole in `judgment.md` is answered or waived-with-reason in `spec.md`.
-- No two statements contradict. Quote both when they do.
+- Every hole in the last round of `judgment.md` addressing this `target` is
+  answered or waived-with-reason in `target`.
+- No two statements in `target` contradict — and none contradicts `spec.md`,
+  when `target` is an epic. Quote both when they do.
 - The success line is observable. "Users are happy" is not a spec.
 
 ## scope=journeys
 
-- Every user goal in `spec.md` has a journey. Goals get dropped silently.
+- Every user goal in `target` has a journey. Goals get dropped silently.
 - Every journey has an entry point, an ordered path, and an unhappy path.
   Missing unhappy paths are the usual failure — check each one for what
   happens when it fails, when it is empty, and when nobody is logged in.
@@ -103,7 +117,11 @@ file:line — what is missing — the smallest fix
 
 Write:
 
-- `.agent-workbench/product/audit-<scope>.md`
+- `.agent-workbench/product/audit-<scope>.md` for `spec.md` — unchanged, so
+  existing plans that link it keep working. For an epic, write
+  `.agent-workbench/product/audit-<scope>-epic-<n>.md` instead: the original
+  v1 audit is a finished record, and reusing its filename would silently
+  erase it.
 
 Then return, and return only — plain text, no bold, no backticks around the
 verdict itself: a caller matching the line exactly should not have to strip

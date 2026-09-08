@@ -139,6 +139,36 @@ check the result, and commits.
 Run it **from your main session, alone**, before spawning the next round of
 builders.
 
+## Evolving a shipped product
+
+`spec.md` is a record of what shipped, not a living document — once it is
+`approved`, it is frozen, the same rule a `done` step's `plan.md` already
+follows. A later request to add, change, or extend the product is a new
+**epic**, never a reopening of `spec.md`.
+
+Invoke `product-agent` the same way. It notices `spec.md` is already
+`approved` and treats the request as an epic instead of new-product discovery:
+
+``` .agent-workbench/product/ epics/ epic-2-notifications.md   one file per
+post-v1 change epics-state.md               the ledger — every epic and its
+status ```
+
+The same six phases run, scoped to the epic file instead of `spec.md` —
+`state.md` tracks which one via a `target:` line, and `market-agent`,
+`judge-agent`, and `audit-agent` all read whatever it names. Several phases
+shrink for an epic and say so rather than re-running at full weight: stack is
+almost always "existing, unchanged," market research only reruns if the epic
+opens genuinely new competitive ground, journeys and screens usually **add**
+rather than replace. `judge-agent` never shrinks — "is this actually needed"
+applies to a five-line epic exactly as to a whole product.
+
+Once an epic is `ready` and the user approves it in `epics-state.md`,
+`plan-agent` recognizes it as the next thing to plan — continuing step and
+phase numbering from wherever the tracker already stood, never restarting at
+1. Every step it plans for that epic links the epic file from its own
+`Resources` block, the same way every step already links `spec.md`, so tracing
+a step back to why it exists is a grep, not a separate index to keep in sync.
+
 ## Who orchestrates what
 
 You (or the main agent) drive the outer loop. The subagents cannot talk to you
@@ -159,11 +189,11 @@ and cannot see each other.
 
 | Agent | Model | Does | Writes |
 |---|---|---|---|
-| `product-agent` | opus / high | Grills the idea into a spec, in six phases | `product/spec.md`, `journeys.md`, `state.md`, `screens/*.html` |
-| `market-agent` | sonnet / medium | Web research: competitors, metrics, complaints | `product/market.md` |
-| `judge-agent` | sonnet / high | Adversarial holes in the idea | `product/judgment.md` |
-| `audit-agent` | sonnet / medium | One scope of thoroughness — `spec`, `journeys`, or `screens` | `product/audit-<scope>.md` |
-| `plan-agent` | **opus / max** | Phases and steps, one plan per feature | `step-*/plan.md`, the tracker |
+| `product-agent` | opus / high | Grills the idea into a spec or a post-v1 epic, in six phases | `product/spec.md` or `product/epics/*.md`, `journeys.md`, `state.md`, `screens/*.html` |
+| `market-agent` | sonnet / medium | Web research on whatever `target` names: competitors, metrics, complaints | `product/market.md` |
+| `judge-agent` | sonnet / high | Adversarial holes in whatever `target` names | `product/judgment.md` |
+| `audit-agent` | sonnet / medium | One scope of thoroughness against `target` — `spec`, `journeys`, or `screens` | `product/audit-<scope>.md`, or `-epic-<n>` for an epic |
+| `plan-agent` | **opus / max** | Phases and steps, one plan per feature — v1 or the next approved epic | `step-*/plan.md`, the tracker |
 | `plan-judge-agent` | sonnet / high | Does the plan set reach a finished product, and can its parallel steps actually run in parallel? | `plan-judgment.md` |
 | `verify-agent` | sonnet / high | Does one plan survive contact with the code? | `step-*/verify.md` |
 | `implement-agent` | opus / high | Builds one step on a branch | code, `step-*/findings.md` |

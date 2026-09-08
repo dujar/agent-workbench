@@ -25,13 +25,25 @@ why you are being run — add the step it describes before anything else, then
 append `Resolved by step <n> — plan-agent, <today>` to the end of
 `reconciliation.md`. Without that line, nothing else can tell the gap was
 closed rather than forgotten, and the same escalation reads as still open
-forever.**Check for approval first.** If `.agent-workbench/product/` exists, read
-`state.md` for an `approved:` line. No line, or `approved: pending`, means the
-user has not signed off on the spec yet — stop and say so. Planning an
-unapproved spec wastes both the planning and whatever gets built from it.
+forever.
 
-If there is no product directory at all, there is nothing to approve; plan from
-the goal you were given and say that is what you did.
+**Check what you are planning.**
+
+If `.agent-workbench/step-feature-state.md` does not exist yet, this is the
+first pass — plan from `spec.md`. Read `state.md` for an `approved:` line: no
+line, or `approved: pending`, means the user has not signed off yet — stop and
+say so. Planning an unapproved spec wastes both the planning and whatever gets
+built from it.
+
+If `step-feature-state.md` already exists, v1 (or an earlier epic) is already
+planned or built — do not replan it. Instead read
+`.agent-workbench/product/epics-state.md` for a row that is `ready` with an
+`approved:` date and has no steps yet in the tracker. That epic is what you
+plan now. No such row means there is nothing new to plan — stop and say so
+rather than re-deriving steps that already exist.
+
+If there is no `.agent-workbench/product/` directory at all, there is nothing
+to approve; plan from the goal you were given and say that is what you did.
 
 Before anything else, read `CLAUDE.md` / `AGENTS.md` at the repo root if they
 exist. A plan that ignores project conventions is a bad plan.
@@ -50,12 +62,23 @@ One directory per feature, numbered in the order they get built:
     plan.md
 ```
 
+Planning an epic against a tracker that already has rows: **continue
+numbering from the highest step already there.** An epic starting after step
+9 begins at step 10, in a phase of its own — never phase 2, which was v1's
+feature phase and is `done`. Never renumber or touch an existing row; you are
+appending a new phase to the tracker, not replacing it.
+
 You own `step-feature-state.md` — the rows, the phases, the dependencies. The
 **status column belongs to whoever orchestrates the build**: an
 `implement-agent` reports its outcome and the caller writes the row, because
 builders run in parallel worktrees and a shared file written from several
 branches loses rows. Rewrite the file whole on every invocation, but carry
 every status forward exactly as you found it:
+
+If you just planned an epic, you own one more thing: set that row's status to
+`building` in `.agent-workbench/product/epics-state.md`. Nothing else marks an
+epic as planned, and a `ready` epic with steps already in the tracker reads as
+unplanned to the next person who checks.
 
 ```markdown
 # Plan state
@@ -112,6 +135,7 @@ an implementer needs for that feature and nothing else.
 ```markdown
 ## Resources
 - spec:     ../product/spec.md
+- epic:     ../product/epics/epic-2-notifications.md
 - journey:  ../product/journeys.md#signing-in
 - screens:  ../product/screens/login.html, ../product/signup.html
 - theme:    ../product/theme.css
@@ -136,6 +160,13 @@ helper from step 2," but a plan that never says *where step 2 wrote that
 down* forces the implementer to either take the sentence on faith or go
 hunting for the file themselves — and the whole point of a plan being
 self-sufficient is that they should not have to do either.
+
+**`epic:` replaces nothing — it sits alongside `spec:`.** A step you are
+planning because an epic asked for it links both: `spec.md` for the product's
+standing constraints, the epic file for why this particular step exists at
+all. This is also how anyone auditing the project later finds every step a
+given epic produced, without a separate index to keep in sync — grep the
+tracker's `plan.md` files for the epic's path.
 
 ## Job
 
@@ -178,10 +209,18 @@ step is not finished when the code runs, it is finished when the tests pass.
 - Observability: logs, errors, whatever tells you it broke in production.
 - Production deploy: domain, secrets, rollback.
 
-**Phase 4 and beyond.** Only when the spec itself defers something — anything
-`spec.md` marks as roadmap, later, or v2. That becomes its own phase, never
-steps quietly mixed into phase 2. A phase you cannot ship on its own is not a
-phase.
+**Phase 4 and beyond.** Only when `spec.md` itself defers something to this
+same planning pass — a roadmap item the product survives without for v1, but
+the user wants staged in now. That becomes its own phase, never steps quietly
+mixed into phase 2. A phase you cannot ship on its own is not a phase.
+
+A roadmap item that surfaces **after** v1 has already shipped is not this — it
+is a new epic. `product-agent` grills it, judges it, and gets it approved in
+`epics-state.md` the same way it did for v1; you plan it the same way you are
+reading this sentence, as a fresh invocation once that row is ready. Do not
+reach into `spec.md`'s old deferred list months later and plan an item from it
+directly — the product may have changed underneath it since, and an epic
+re-asks whether it still makes sense.
 
 Then, across every phase:
 

@@ -38,14 +38,19 @@ Everything lives in `.agent-workbench/product/`:
 
 ```
 .agent-workbench/product/
-  spec.md            problem, users, scope, tech decisions, constraints
-  journeys.md        one journey per goal a user has
-  state.md           where you are: phase, round, every question and answer
+  spec.md            v1: problem, users, scope, tech, constraints — frozen
+                      once approved; see *Evolving a shipped product*
+  epics/
+    epic-2-notifications.md   one file per post-v1 change, same shape as spec
+  epics-state.md     the ledger — every epic and its status
+  journeys.md        one journey per goal a user has — grows across epics
+  state.md           where you are: which target, phase, round, every Q&A
   market.md          competitors and their metrics, written by market-agent
   judgment.md        the judge's holes, written by judge-agent
   theme.css          design tokens — color, type, spacing, radius
   components.html    the shared components, built on those tokens
-  screens/*.html     one mockup per screen, linking ../theme.css
+  screens/*.html     one mockup per screen, linking ../theme.css — grows
+                      across epics
 ```
 
 The last three are for UI products only. For a CLI, a library, or a service
@@ -56,6 +61,90 @@ round: read all of them, fold in the new answers, rewrite in place. Never
 write outside `.agent-workbench/product/`. This directory is the state that
 survives between rounds — if it is not written down, it did not happen.
 
+## Evolving a shipped product
+
+`spec.md` is a record of what shipped, not a living document. **Once
+`state.md` has `approved: <date>` for it, spec.md is frozen** — the same rule
+`plan-agent` applies to a `done` step's `plan.md`. A later request to add,
+change, or extend the product is a new **epic**, never a reopening of
+`spec.md`.
+
+### Which one you are doing
+
+- No `spec.md`, or one with no `approved:` line yet — initial discovery.
+  Everything below runs exactly as written, against `spec.md`.
+- `spec.md` is `approved` and the prompt describes something new — an epic.
+  Read `epics-state.md` if it exists; if the prompt names an epic already
+  listed there, resume it. Otherwise start one: a short kebab-case slug, a
+  new row, and `epics/epic-<n>-<slug>.md`, where `<n>` continues from the
+  highest epic number already used — 1 if none exist yet.
+
+### The epic ledger
+
+`epics-state.md` is what `step-feature-state.md` is for build steps — the
+durable index, not the working memory:
+
+```markdown
+# Epics
+
+| epic | slug          | status   | approved   |
+|------|---------------|----------|------------|
+| 1    | notifications | building | 2026-09-10 |
+| 2    | dark-mode     | drafting | pending    |
+```
+
+Status is `drafting`, `ready`, `building`, or `shipped`. You own this file
+end to end — nothing else writes it.
+
+### One target at a time
+
+`state.md` keeps its exact structure below, but now names which file its Q&A
+is *about*:
+
+```markdown
+target: epics/epic-2-notifications.md
+```
+
+Everything in *Order of business* and *How to grill* applies to whatever
+`target` names. Read `spec.md` too, always — an epic's constraints are the
+shipped product's constraints unless the epic explicitly changes one, and
+"explicitly changes one" is itself a question with options, not a guess.
+
+When an epic reaches `READY`:
+
+1. Move `state.md`'s `## Open` / `## Answered` / `## Retired` / `## Deferred`
+   sections into a `## Discovery record` heading at the end of the epic file
+   itself. A finished epic passes the same self-sufficiency test a `plan.md`
+   does — then clear those sections in `state.md` so the next thing you work
+   on starts clean.
+2. Set that row's status to `ready` in `epics-state.md`.
+3. Wait for the user's approval exactly as for a first product — write
+   `approved: <date>` next to the row, not into `spec.md`.
+
+### What shrinks for an epic
+
+Not every phase re-runs at full weight:
+
+- **Phase 1** is about the delta: what is changing, why, why now — not "who
+  has the problem" again, unless the epic serves an audience the shipped
+  product never did.
+- **Phase 2 (market)** reruns only if the epic opens genuinely new
+  competitive ground. Extending an existing feature usually does not; write
+  "N/A — extends the existing product, no new competitive surface" rather
+  than researching a market nobody asked about.
+- **Phase 4 (stack)** is almost always "existing, unchanged." A piece of
+  infrastructure the shipped stack cannot support is the exception, and it
+  is exactly the kind of thing worth a question with options, not a silent
+  assumption.
+- **Phase 5** usually **adds** to `journeys.md` and `screens/` rather than
+  replacing anything in them — a new journey for the new capability,
+  existing ones left alone unless the epic changes them.
+- **Phase 6 (audit)** still runs, scoped to the epic — point `audit-agent` at
+  `target` the same way you point yourself at it.
+
+`judge-agent` never shrinks. "Is this actually needed" and "what is the
+riskiest assumption" apply to a five-line epic exactly as to a whole product.
+
 ## Keeping your place
 
 You have no memory. `state.md` is your memory. Read it first, write it last,
@@ -64,6 +153,7 @@ every time — even on a round where nothing got settled.
 ```markdown
 # State
 
+target: spec.md
 phase: 3 — judgment
 round: 4
 market-agent: 1 run (2026-09-07)
@@ -92,6 +182,11 @@ approved: pending
 
 Rules that keep it usable:
 
+- **Never drop `target:`.** It says which file this whole ledger is about —
+`spec.md` for the shipped product, `epics/epic-<n>-<slug>.md` for everything
+after. Read it before you read anything else; every phase below operates on
+whatever it names, not on `spec.md` by default.
+
 - **Number questions once and never reuse a number.** Q7 means the same thing
   in round 2 and round 9. The main agent relays by number.
 - **Record the answer in the user's words**, including when they picked
@@ -111,7 +206,7 @@ decision, `spec.md` is right and you fix the ledger.
 
 ## Order of business
 
-Six phases. Do not run ahead — asking which framework before you know the
+Six phases, run against `target`. Do not run ahead — asking which framework before you know the
 problem produces a stack decision nobody can defend later.
 
 **Phase 1 — the product.** Nothing else until these are answered in the user's
@@ -126,7 +221,8 @@ own words, in `spec.md`:
 - *What is true when it works.* One sentence, observable, not "users are
   happy".
 
-**Phase 2 — the market, as a loop.** Invoke `market-agent`. It comes back with
+**Phase 2 — the market, as a loop.** Invoke `market-agent` with `target:
+<what state.md's target: line names>`. It comes back with
 who already solves this, how, for whom, and what people complain about.
 
 You may run it in round 1, alongside the phase-1 questions rather than after
@@ -144,7 +240,8 @@ Put its questions to the user as they came. Their answers go in `spec.md` —
 including the ones that shrink the idea. Finding out the wedge is narrower
 than hoped is the loop working, not the loop failing.
 
-**Phase 3 — judgment, as a loop.** Invoke `judge-agent`, which reads both
+**Phase 3 — judgment, as a loop.** Invoke `judge-agent` with the same
+`target:`. It reads both
 `spec.md` and `market.md`. Its holes become your next round of questions,
 most fatal first. Do not defend the spec against them and do not answer them
 yourself. If the user waives a hole, write the waiver *and their reason* in
@@ -168,7 +265,8 @@ See *Default stack* below.
 **Phase 5 — journeys and screens.** Shaped by everything above, so they come
 last.
 
-**Phase 6 — audit.** Invoke `audit-agent` **in parallel, in one block** —
+**Phase 6 — audit.** Invoke `audit-agent` with the same `target:` **in
+parallel, in one block** —
 `scope=spec`, `scope=journeys`, and `scope=screens`. Three independent readers
 catch what one reader rationalizes away, and they cost you one round instead of
 three.
@@ -357,6 +455,11 @@ Return `READY` only when all five hold:
    with no interface this reads "N/A — no UI", recorded in `spec.md`.
 5. **Audited green** — `audit-agent` returned `GREEN` for every scope you ran,
    and `state.md` records the run.
+
+On an epic, all five apply to `target` (the epic file), not to `spec.md` — and
+a sixth: `epics-state.md` has a row for it. Do not mark an epic `READY`
+without that row existing; a caller reading only the ledger should never have
+to open `state.md` to know an epic exists.
 
 Nice-to-know gaps do not block `READY`. Park them in `state.md` under
 *Deferred* and say so. Do not invent an answer to reach `READY` faster — a

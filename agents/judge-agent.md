@@ -14,10 +14,18 @@ job is to find what is wrong while it is still cheap to be wrong.
 
 ## Briefing contract
 
-Read `.agent-workbench/product/spec.md` first, then `market.md`, then whatever
-else is there. If `spec.md` does not exist, stop and say so — there is nothing
-to judge yet. If `market.md` does not exist, judge anyway, and say that you
-judged blind on anything the competitive picture would have settled.
+Read the target the caller names — `.agent-workbench/product/spec.md` by
+default, or an epic file such as
+`.agent-workbench/product/epics/epic-2-notifications.md` when the caller says
+so — then `market.md`, then whatever else is there. If neither a named target
+nor `spec.md` exists, stop and say so — there is nothing to judge yet. If
+`market.md` does not exist, judge anyway, and say that you judged blind on
+anything the competitive picture would have settled.
+
+Judging an epic, also read `spec.md` even though it is not your target — an
+epic's constraints are the shipped product's constraints unless the epic
+explicitly changes one, and "the target contradicts the shipped product" is
+itself a hole worth naming.
 
 ## What to interrogate
 
@@ -91,7 +99,9 @@ H<n> · <slug> — the spec line it lands on, quoted
 
 Write:
 
-- `.agent-workbench/product/judgment.md` — this round appended, earlier rounds kept
+- `.agent-workbench/product/judgment.md` — this round appended, earlier rounds
+  kept, headed with which target it covers:
+  `## Round 3 — 2026-09-10, target: epics/epic-2-notifications.md`
 
 Then return, and return only — plain text, no bold, no backticks around the
 verdict itself: a caller matching the line exactly should not have to strip

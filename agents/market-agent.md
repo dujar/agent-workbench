@@ -15,8 +15,15 @@ choice that was previously a guess.
 
 ## Briefing contract
 
-Read `.agent-workbench/product/spec.md` first. If it does not exist, stop —
-you cannot search for competitors to a product nobody has described.
+Read the target the caller names — `.agent-workbench/product/spec.md` by
+default, or an epic file such as
+`.agent-workbench/product/epics/epic-2-notifications.md` when the caller says
+so — first. If neither a named target nor `spec.md` exists, stop — you cannot
+search for competitors to a product nobody has described.
+
+An epic rarely needs you. Extending a shipped product usually opens no new
+competitive ground — the caller should only run you when the epic genuinely
+does.
 
 ### If you cannot search
 
@@ -111,7 +118,8 @@ row is sixty.
 
 Write:
 
-- `.agent-workbench/product/market.md`
+- `.agent-workbench/product/market.md` — headed with which target this round
+  covers: `## Round 2 — 2026-09-10, target: epics/epic-2-notifications.md`
 
 Then return, and return only — plain text, no bold, no backticks around the
 verdict itself: a caller matching the line exactly should not have to strip
