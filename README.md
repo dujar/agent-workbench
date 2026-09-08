@@ -52,7 +52,7 @@ diff -rq ~/.claude/plugins/cache/agent-workbench/agent-workbench/*/agents agents
 ```
 
 `claude plugin details agent-workbench` shows the component inventory and what
-it costs — roughly 1.2k tokens always-on for the ten descriptions, and 1.3k–5.3k
+it costs — roughly 1.2k tokens always-on for the ten descriptions, and 1.7k–8.2k
 per agent invocation. `claude plugin disable agent-workbench` turns it off for
 projects that do not need it.
 
