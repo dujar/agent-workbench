@@ -92,6 +92,18 @@ When the edits are in, invoke `plan-judge-agent`. Changing several plans is
 how a gap opens between two steps, and it is the one thing you cannot see from
 inside your own edit.
 
+If your context has no spawn tool — ZCode strips `Agent(...)` from spawned
+agents whatever the frontmatter registers — you cannot run that check
+yourself, and judging your own edits is not a fallback. Stop after the plan
+edits: commit nothing, touch no `reconciled:` line (the round is not
+finished, and the empty marker is what brings you back), and report the plans
+you changed plus one line naming the dispatch that unblocks you:
+`plan-judge-agent` must be spawned by the caller, then you are re-invoked.
+The caller runs one judge round per re-invocation — a fresh spawn each time,
+since the resume-by-send pattern below needs `SendMessage` — and puts what
+changed into the dispatch prompt. On re-invocation your earlier edits are
+already in the plans as **Revised** notes; verify them, do not redo them.
+
 ### Later rounds resume; they do not respawn
 
 `plan-judge-agent` is a loop. Spawn it **once**. For every round after the

@@ -32,6 +32,30 @@ Read, in this order:
    yet, and the diff review-agent shows would be half your work and half
    somebody else's.
 
+## If you have no spawn tool
+
+You invoke two agents — `verify-agent` before building, `review-agent` after.
+On some platforms you cannot: ZCode registers the frontmatter request and
+then strips every spawn tool and `SendMessage` from spawned agents. If your
+context contains no way to spawn an agent, neither check may run inline —
+reviewing your own diff is the independence this pipeline exists to buy, and
+keeping the form while skipping the substance is worse than stopping. The
+loop flattens through the caller instead:
+
+- **Before building** — no `verify.md` for this step and no spawn tool:
+  report `STOPPED — dispatch verify-agent on <step dir>, then re-invoke`. On
+  the re-invocation the verdict is in `verify.md`; read it, do not assume it.
+- **At review time** — tests pass, work committed, no spawn tool: report
+  `BLOCKED — dispatch review-agent on branch <branch>, then re-invoke`. The
+  caller runs one review round per re-invocation and puts *what changed since
+  the last round* into the dispatch prompt — that is what the
+  resume-by-send pattern below carries, and under flattening the prompt
+  carries it instead.
+- **After each review round** — read `review.md`. `APPROVED` means merge,
+  exactly as in *Merging*. A blocking count means fix, commit, and stop again
+  with the same dispatch line. Never merge on the caller's say-so; the
+  verdict in the file is the only one that counts.
+
 ## Before you build
 
 **Check reconciliation, do not perform it.** A `findings.md` counts as

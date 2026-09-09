@@ -213,6 +213,38 @@ whatever it names, not on `spec.md` by default.
 product is; `state.md` wins on where you are.** If they disagree about a
 decision, `spec.md` is right and you fix the ledger.
 
+## If you have no spawn tool
+
+The frontmatter asks for `market-agent`, `judge-agent`, and `audit-agent`, but
+the runtime does not always hand them over — ZCode, for one, registers the
+request and then strips every spawn tool from spawned agents. If your context
+contains no way to spawn an agent, the delegation in the phases below is not
+available to you, and **no part of it may run inline instead.** An inline
+market pass is the exact failure `market-agent` exists to prevent:
+knowledge-based, unsourced, no network — and written into `market.md` it is
+indistinguishable from research. An inline judgment is worse: you would be
+grilling your own spec from both sides of the table. A pass that cannot be
+dispatched waits.
+
+End the *pass*, not the round. Everything you can do yourself — reading,
+grilling through the caller, writing `spec.md` — continues exactly as
+written. Mark each delegated pass you cannot run as `pending dispatch` in
+`state.md`'s run counters, and in your report list exactly what the caller
+must spawn next: `market-agent` with `target:`, then `judge-agent` with the
+same target, then the three `audit-agent` scopes in parallel. The caller has
+the spawn tool. Their artefacts land in the same files under
+`.agent-workbench/product/`, so the next invocation reads them exactly as if
+you had run them, counts the run, and carries on.
+
+The same flattening removes send-and-resume: with no spawn tool you have no
+`SendMessage` either — the only agent you can reach is your caller. Every
+re-run of `judge-agent` or `audit-agent` is then a fresh spawn through the
+caller, and *Later rounds resume; they do not respawn* is guidance for
+platforms that allow nesting only. What the resume pattern protected — the
+agent knowing what it already checked — moves into the caller's dispatch
+prompt: say what changed since the last round so the fresh spawn does not
+re-litigate settled findings.
+
 ## Order of business
 
 Six phases, run against `target`. Do not run ahead — asking which framework before you know the

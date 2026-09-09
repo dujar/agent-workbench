@@ -57,6 +57,34 @@ it costs — roughly 1.3k tokens always-on for the eleven descriptions, and
 1.7k–8.2k per agent invocation. `claude plugin disable agent-workbench` turns it off for
 projects that do not need it.
 
+### Running under ZCode
+
+ZCode installs this plugin and registers all eleven agents, but spawned
+agents there get no spawn tool — the `Agent(...)` requests in the frontmatter
+are recorded and then stripped — so the agent-to-agent delegation the
+definitions describe cannot run from inside an agent. The fix is flattened
+orchestration: your session performs the inner dispatches itself.
+
+- `product-agent` marks the delegated passes `pending dispatch` and returns a
+  spawn list; you run `market-agent`, then `judge-agent`, then the three
+  `audit-agent` scopes, and re-invoke it. The artefacts land in the same
+  files, so nothing else changes.
+- `implement-agent` stops and asks for `verify-agent` / `review-agent`
+  dispatches; each review round is a fresh spawn — there is no
+  resume-by-send — with what changed since the last round in your dispatch
+  prompt.
+- `reconcile-agent` edits the plans and hands the `plan-judge-agent` dispatch
+  back to you before anything is committed.
+
+The rule that survives every platform: a judge never runs inline. If a pass
+cannot be dispatched, it waits — an unsourced market pass or a self-review
+poisons everything downstream of it.
+
+Install: **Settings → Plugin Management → Discover → `+`**, add this repo as
+a marketplace (GitHub URL or local directory), and install `agent-workbench`.
+The cache is version-keyed the same way, so the bump–update–restart loop
+applies too; the plugin UI's update button replaces `claude plugin update`.
+
 ## The flow
 
 ```
