@@ -1,7 +1,8 @@
 # agent-workbench
 
-Ten subagents for [Claude Code](https://claude.com/claude-code) that carry a
-product from a vague idea to merged code — with a judge at every handoff.
+Eleven subagents for [Claude Code](https://claude.com/claude-code) that carry
+a product from a vague idea — or no idea at all — to merged code, with a judge
+at every handoff.
 
 Every agent starts with no memory of your conversation. Everything they know
 comes from `.agent-workbench/`, which is the whole point: the work survives
@@ -52,13 +53,16 @@ diff -rq ~/.claude/plugins/cache/agent-workbench/agent-workbench/*/agents agents
 ```
 
 `claude plugin details agent-workbench` shows the component inventory and what
-it costs — roughly 1.2k tokens always-on for the ten descriptions, and 1.7k–8.2k
-per agent invocation. `claude plugin disable agent-workbench` turns it off for
+it costs — roughly 1.3k tokens always-on for the eleven descriptions, and
+1.7k–8.2k per agent invocation. `claude plugin disable agent-workbench` turns it off for
 projects that do not need it.
 
 ## The flow
 
 ```
+  scout-agent   (only if you do not have an idea yet — candidates, with metrics)
+       │
+       ▼
   product-agent ──> market-agent ──> judge-agent ──> audit-agent ×3
        │  (asks you one question at a time, with options)
        ▼
@@ -80,6 +84,25 @@ projects that do not need it.
             instead of new-product discovery — see *Evolving a shipped
             product* below, then the loop above repeats for just that epic
 ```
+
+### 0. Scout — `scout-agent`, only if you need it
+
+Skip this if you know what you are building. If you do not, `scout-agent` is
+the entry point: it asks what you do all day and what you already work around,
+searches where people complain in public, and comes back with five to eight
+candidate **problems** — each with a demand number and its source, the
+incumbent who serves it badly, **why that incumbent has not fixed it**, where
+you would find the first hundred users, the shape (web, desktop, mobile, CLI),
+and whether one build cycle can ship it.
+
+Two invocations at most: one to ask, one to deliver. It returns `NO SOURCES`
+rather than writing a trend list from memory.
+
+What it writes is a **seed, not a spec**. You pick a candidate and
+`product-agent` still grills you from zero — which matters most for a candidate
+marked `cold`, meaning it came from search rather than from your own working
+life. `judge-agent` asks *"who have you actually watched hit this problem?"* in
+phase 3, and a cold pick has no answer.
 
 ### 1. Specify — `product-agent`
 
@@ -232,6 +255,7 @@ and cannot see each other.
 
 | Agent | Model | Does | Writes |
 |---|---|---|---|
+| `scout-agent` | sonnet / medium | Finds candidate problems with demand metrics, when you do not have an idea | `product/scout.md` |
 | `product-agent` | opus / high | Grills the idea into a spec or a post-v1 epic, in six phases | `product/spec.md` or `product/epics/*.md`, `journeys.md`, `state.md`, `screens/*.html` |
 | `market-agent` | sonnet / medium | Web research on whatever `target` names: competitors, metrics, complaints | `product/market.md` |
 | `judge-agent` | sonnet / high | Adversarial holes in whatever `target` names | `product/judgment.md` |
@@ -338,10 +362,11 @@ aliases map to different models. Point them somewhere distinct:
 Map both to the same id and every agent runs identically — which works, but the
 tiering is doing nothing.
 
-**Web search.** `market-agent` prefers `WebSearch`, which executes on the model
+**Web search.** `market-agent` and `scout-agent` prefer `WebSearch`, which executes on the model
 provider's side and may not exist off Anthropic. It falls back to `WebFetch`
 (client-side, universal), then to any web-search MCP tool present, and returns
-`NO SOURCES` rather than writing a competitive landscape from memory. A failed
+`NO SOURCES` rather than writing a competitive landscape — or a list of product
+ideas — from memory. A failed
 search and an empty market are opposite findings; the agent will not conflate
 them.
 
@@ -440,8 +465,8 @@ The rule that came out of this is not "judgement needs Opus" — it is that
 reasoning about *numerical or semantic edge cases inside code* needs Opus,
 while reading documents for what is missing does not.
 
-The result: six of ten agents run on Sonnet, where before all but two ran on
-Opus. Moving the
+The result: six of eleven agents run on Sonnet, where before all but two ran
+on Opus. Moving the
 judgement-heavy ones to Sonnet is roughly a 5× cost cut, and it is a real
 trade — under test, `review-agent` on Opus mutation-tested a suite and caught a
 half-up assertion that did not actually discriminate. Try it and compare before
@@ -461,6 +486,8 @@ Nothing forces the whole pipeline. Each agent works alone:
 - `verify-agent` on any plan you wrote yourself, before you build it.
 - `judge-agent` on a spec from anywhere.
 - `market-agent` when you just want to know who else is in the space.
+- `scout-agent` when you want candidates with evidence and no commitment to
+  build any of them.
 
 ## License
 

@@ -23,7 +23,10 @@ you are, not the prompt.
 
 So: **read `state.md` before anything else, every single invocation.** If it
 exists, you are resuming — the prompt is just the new answers. If it does not
-and you were given no idea to work from, say so and stop.
+and you were given no idea to work from, say so and stop — unless `scout.md`
+is there, which means `scout-agent` ran and the prompt names the candidate the
+user picked. If neither exists and the user does not yet know what they want to
+build, say so and stop: `scout-agent` is what runs first, not you.
 
 An invocation whose prompt is only "continue" must still work: read the state,
 re-ask what is outstanding.
@@ -45,6 +48,8 @@ Everything lives in `.agent-workbench/product/`:
   epics-state.md     the ledger — every epic and its status
   journeys.md        one journey per goal a user has — grows across epics
   state.md           where you are: which target, phase, round, every Q&A
+  scout.md           candidate problems, written by scout-agent, if the user
+                      arrived without an idea — a seed, never a spec
   market.md          competitors and their metrics, written by market-agent
   judgment.md        the judge's holes, written by judge-agent
   theme.css          design tokens — color, type, spacing, radius
@@ -214,7 +219,17 @@ Six phases, run against `target`. Do not run ahead — asking which framework be
 problem produces a stack decision nobody can defend later.
 
 **Phase 1 — the product.** Nothing else until these are answered in the user's
-own words, in `spec.md`:
+own words, in `spec.md`.
+
+If `scout.md` exists, read it and the row for the candidate the user picked —
+its demand evidence and its incumbent-weakness column are real research, and
+repeating them wastes a round. But **that row is not an answer to any question
+below.** A candidate marked `cold` means the user has never watched anyone hit
+this problem, which is the first thing `judge-agent` asks; get that on the
+record in round 1 rather than discovering it in phase 3. Never copy scout's
+prose into `spec.md` — it is a seed, and the answers have to be the user's.
+
+The questions:
 
 - *What problem*, and who has it. A named role, not "users".
 - *What they do today instead.* Every real problem has an ugly workaround.

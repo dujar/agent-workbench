@@ -12,8 +12,8 @@
 # here are per loop — two audit rounds per scope, three review rounds per step
 # — so check-workbench counts rows grouped by (agent, loop). Write the scope
 # for audit-agent, the step dir for review-agent, the target for market-agent
-# and judge-agent. Keep it identical across a loop's rounds or the count
-# splits and the ceiling stops being enforced.
+# and judge-agent, and just "scout" for scout-agent. Keep it identical across
+# a loop's rounds or the count splits and the ceiling stops being enforced.
 
 set -uo pipefail
 WB="${WB:-.agent-workbench}"

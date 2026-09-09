@@ -100,7 +100,7 @@ if [ -f "$LOG" ]; then
   say "run-log/"
   while IFS=$'\t' read -r count agent loop; do
     case "$agent" in
-      market-agent|judge-agent|plan-judge-agent|audit-agent) ceil=2 ;;
+      scout-agent|market-agent|judge-agent|plan-judge-agent|audit-agent) ceil=2 ;;
       review-agent) ceil=3 ;;
       *) continue ;;
     esac

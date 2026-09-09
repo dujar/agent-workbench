@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "agent-workbench",
-  "description": "Idea to merged code, with a judge at every handoff. Ten subagents for Claude Code.",
+  "description": "Idea to merged code, with a judge at every handoff. Eleven subagents for Claude Code.",
   "owner": {
     "name": "dujar",
     "url": "https://github.com/dujar"
@@ -9,7 +9,7 @@
   "plugins": [
     {
       "name": "agent-workbench",
-      "description": "Spec, market research, idea judgment, spec audits, phased planning, plan judgment, plan verification, branch-per-step implementation, pre-merge review, and cross-step reconciliation.",
+      "description": "Candidate scouting, spec, market research, idea judgment, spec audits, phased planning, plan judgment, plan verification, branch-per-step implementation, pre-merge review, and cross-step reconciliation.",
       "source": "./",
       "category": "productivity"
     }
