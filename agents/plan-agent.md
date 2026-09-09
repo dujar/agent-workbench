@@ -20,11 +20,14 @@ say which you picked.
 
 **Check for an open structural gap first.** If
 `.agent-workbench/reconciliation.md` exists, read its last round. If it ends
-`NEEDS REPLANNING` with no `Resolved by step <n>` line after it, that gap is
+`NEEDS REPLANNING` with no `Resolved by` line after it, that gap is
 why you are being run — add the step it describes before anything else, then
 append `Resolved by step <n> — plan-agent, <today>` to the end of
-`reconciliation.md`. Without that line, nothing else can tell the gap was
-closed rather than forgotten, and the same escalation reads as still open
+`reconciliation.md`. Closing the gap by **removing** a step is also a
+resolution: write `Resolved by removing step <n> — plan-agent, <today>` (and
+delete the step directory and its tracker row in the same pass, so no orphan
+row or directory survives). Without that line, nothing else can tell the gap
+was closed rather than forgotten, and the same escalation reads as still open
 forever.
 
 **Check what you are planning.**
@@ -85,7 +88,17 @@ unplanned to the next person who checks.
 
 round: 2
 plan-judge: 1 run (2026-09-07) — 3 gaps
+```
 
+The `plan-judge:` header counts **this planning loop only** — the passes you
+ran to reach `SHIPPABLE` for the current tracker. `reconcile-agent` runs
+`plan-judge-agent` again after its own edits and logs those runs itself with a
+`reconcile-<date>` loop identity; they never enter this counter. Counting
+them here, a three-step project with two reconciliations reads as a plan
+loop that never closed, and `check-workbench` fails a healthy, finished
+project.
+
+```markdown
 | step | phase  | feature      | dir                  | status  | depends on |
 |------|--------|--------------|----------------------|---------|------------|
 | 1    | 1      | repo-setup   | step-1-repo-setup/   | planned | —          |
@@ -337,10 +350,14 @@ does not apply, and say so on one line rather than dropping it silently.
   of steps, and what happens on the unhappy path. A library, CLI filter, or
   single-endpoint change does not need one; write "N/A — <reason>".
 - **Screens** — for any new UI surface: the path to its mockup. If
-  `.agent-workbench/product/screens/` already holds one, link it. If not,
-  build it there — static HTML linking `../theme.css`, opening from disk — and
-  link that. A design file or the name of an existing screen it copies also
-  counts. Do not plan UI nobody can look at. Same N/A rule.
+  `.agent-workbench/product/screens/` already holds one, link it. A design
+  file or the name of an existing screen it copies also counts. **Do not
+  create screens here, even when none exists** — journeys.md owns which
+  screens are reachable and you may not edit it, so a screen only you know
+  about fails `check-workbench` forever. A genuinely new surface with no
+  mockup is a gap for `product-agent`: record it in *Open questions* and let
+  `verify-agent`'s mockup gate hold the step until one is drawn. Same N/A
+  rule.
 - **Tasks** — the work inside this step, numbered, ordered so each task's
   prerequisites come earlier. Each task names the file it touches, what
   changes, and how anyone would know it worked: a test, an assertion, a
@@ -394,9 +411,16 @@ verdict itself: a caller matching the line exactly should not have to strip
 markdown first:
 
 ```
-VERDICT: <one of: PLANNED — <n> steps in <m> phases   |   <n> gaps (stopped at the judge's ceiling)>
-wrote: <the path(s)>
+VERDICT: <one of: PLANNED — <n> steps in <m> phases   |   <n> gaps (stopped at the judge's ceiling)   |   STOPPED — <reason>   |   STOPPED — <reason>, dispatched: <agent to spawn>>
+wrote: <the path(s), or none if you stopped before writing>
 ```
+
+`STOPPED — <reason>` is for every briefing-contract stop: a spec with no
+`approved:` date, an epic ledger with nothing ready, a missing goal. The
+`dispatched:` form adds the spawn the caller must run before re-invoking you —
+the flattened no-spawn-tool path needs it, and without it a caller grepping
+for `VERDICT:` cannot tell a clean stop from a crash. Write
+`wrote: (none)` when you stopped before writing anything.
 
 Write the run order into the tracker's **Next** block, not into this message.
 It is what the caller comes back to between merges, so it belongs on disk.

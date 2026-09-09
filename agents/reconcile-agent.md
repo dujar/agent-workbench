@@ -70,11 +70,13 @@ number.
 
 You may not touch a `done` step's plan. It is a record of what was built.
 
-In `step-feature-state.md` you may update **one thing**: the `plan-judge:`
-counter in the header, because you are the one who ran it and an unrecorded
-run is a ceiling nobody can enforce. Rows, phases, dependencies and the status
-column are not yours — `plan-agent` owns the first three, the orchestrator
-owns the last.
+You do **not** touch `step-feature-state.md` at all — including its
+`plan-judge:` header, which counts the *planning* loop and is `plan-agent`'s
+to keep. The judge runs you trigger are separate loops: the caller logs each
+with the loop identity `reconcile-<today>`, so `check-workbench` counts them
+per reconciliation instead of against the plan ceiling. Incrementing the
+header here makes every project with two reconciliations read as a plan loop
+that never closed, and a healthy, finished project fails the check.
 
 Every edit carries its reason, in the plan, where the next reader will hit it:
 
@@ -158,7 +160,12 @@ Never commit code. You change plans; someone else changes the repo. If
 rather than committing around it.
 
 Append this round to `.agent-workbench/reconciliation.md` — which findings you
-folded in, which plans changed and why, and the judge's verdict. Earlier rounds
+folded in, which plans changed and why, and the judge's verdict. **This
+append is not gated on having made edits**: a `NEEDS REPLANNING` round with
+no plan edits must still land here, because the escalation on disk is the
+only thing that brings `plan-agent` in — with the finding already dated
+`reconciled:`, an escalation that exists only in your reply is invisible to
+`check-workbench` and the gap is silently lost. Earlier rounds
 stay; a finding that keeps rippling is worth seeing twice.
 
 Last, add `reconciled: <today>` to the header of every `findings.md` you
@@ -199,8 +206,11 @@ markdown first:
 
 ```
 VERDICT: <one of: RECONCILED — <n> plans updated   |   NOTHING TO RECONCILE   |   NEEDS REPLANNING — blocking   |   NEEDS REPLANNING — <step> still buildable>
-wrote: <the path(s)>
+wrote: <the path(s), or none>
 ```
+
+Write `wrote: (none)` when nothing was written — the NOTHING TO RECONCILE
+case leaves no file, and a bare `wrote:` line reads as a truncated receipt.
 
 `NEEDS REPLANNING` needs its second half, always. **Blocking** means nothing
 should be built until `plan-agent` runs. **`<step> still buildable`** means

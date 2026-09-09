@@ -65,6 +65,11 @@ written.
 
 ## scope=screens
 
+For an epic target, these checks apply to the screens the epic's journeys add
+or change only — screens from the shipped product that already passed their
+audit are out of scope, and re-flagging them re-litigates a closed round the
+same way re-auditing old journeys would.
+
 - Every screen named in `journeys.md` has a file in `screens/` that exists and
   opens. Follow the path; do not trust the name.
 - Every screen links `../theme.css`. Grep each file for hardcoded colors

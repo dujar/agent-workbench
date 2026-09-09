@@ -34,5 +34,8 @@ if [ ! -f "$LOG" ]; then
   } > "$LOG"
 fi
 
+# Pipe characters are replaced with "/", not markdown-escaped: the run log is
+# read by check-workbench with awk -F'|', which does not understand \| — an
+# escaped pipe shifts every column after it and splits one loop's count in two.
 printf '| %s | %s | %s | %s |\n' \
-  "$(date -u +%Y-%m-%dT%H:%MZ)" "$agent" "${verdict//|/\\|}" "${note//|/\\|}" >> "$LOG"
+  "$(date -u +%Y-%m-%dT%H:%MZ)" "$agent" "${verdict//|//}" "${note//|//}" >> "$LOG"

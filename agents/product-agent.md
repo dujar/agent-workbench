@@ -201,9 +201,12 @@ whatever it names, not on `spec.md` by default.
 - **The run counters are how the loops end.** Phase 2 and phase 3 each get two
   passes; without the counts here you cannot tell a second pass from a sixth.
   They count runs against **the current `target`**, not the project's history —
-  so reset them to zero the moment you start a new epic, alongside clearing the
-  Q&A sections. Carried forward, the second epic starts at four and reads as a
-  loop that never closed, to you and to `check-workbench` alike.
+  so they reset to zero **when the new epic reaches `READY`**, in the same
+  pass that moves the Q&A sections into the epic file's Discovery record (see
+  *When an epic reaches READY*). Not at epic start: clearing the sections
+  then would destroy the previous target's Retired/Deferred history before it
+  was archived, and resetting the counters then would misstate the new
+  target's loop.
 - **Never drop the `approved:` line.** Somebody else writes it when the user
   signs off, and you rewrite this file whole every round. Read it, keep it,
   write it back exactly as you found it. Erasing an approval sends `plan-agent`
@@ -495,7 +498,10 @@ Return `READY` only when all five hold:
 
 1. **Product judged** — `market.md` and `judgment.md` both exist, and every
    hole in `judgment.md` is either answered in `spec.md` or waived there with
-   a reason.
+   a reason. The one exception: `market-agent` returned `NO SOURCES` — then
+   `market.md` legitimately does not exist, the failure is recorded in
+   `spec.md`, and this item is satisfied by that record. Requiring the file
+   here would deadlock `READY` on exactly the run where research failed.
 2. **Tech settled** — language, framework, storage, auth, and hosting each
    named, or explicitly marked "existing, unchanged". No placeholders.
 3. **Journeys complete** — every user goal has a journey with an entry point,

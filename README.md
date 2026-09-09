@@ -275,12 +275,25 @@ loops on ZCode produce.
 2. Spawn one `implement-agent` per ready step, in parallel, `isolation: "worktree"`.
 3. A builder returning `READY TO MERGE` has a rebased, reviewed branch. **Merge
    those one at a time** — git refuses to update a branch checked out in another
-   worktree, and two merges at once is how a green build disappears.
+   worktree, and two merges at once is how a green build disappears. After each
+   merge, run the suite on the base branch before merging the next.
+   **If a merge conflicts**, the undeclared-collision plan-judge missed has
+   arrived. Resolve it yourself, keeping both sides' *intent* (both
+   registrations, both calls — not picking one branch's file wholesale), run
+   the suite, and record the collision in the surviving steps' `findings.md`;
+   if the conflict is too tangled to resolve with confidence, reset the merge
+   (`git merge --abort`), and re-spawn the second builder to rebase onto the
+   new base itself. Two builders each wrote their half against the same file;
+   the merge is the only place anyone sees both halves together.
 4. Set that row's status in `step-feature-state.md` to `done`, or `blocked`.
    A `STOPPED` builder is neither — it never branched, so it wrote no
    `findings.md` and changed nothing. Leave the row `planned`, clear what it
    named, and re-spawn it. Marking it `blocked` strands every step that
    depends on it, for a step that has not been attempted.
+   On `BLOCKED`, salvage the lessons: copy the step's `findings.md` from the
+   branch into `.agent-workbench/` on the base branch before the worktree is
+   cleaned up — a blocked branch never merges, so `reconcile-agent` can
+   never see what the attempt taught unless you copy it out.
    Loop back to 1.
 
 `plan-agent` prints exactly this list, with your step numbers filled in.
@@ -419,13 +432,19 @@ clone without the plugin installed, call them by path: `bin/check-workbench`.
 
 It fails loudly on: a tracker row whose directory is missing, a dependency on a
 step that does not exist or is built later, a status nothing ever writes, a
-`done` step with no `findings.md`, a *Resources* path that no longer resolves,
-a screen no journey reaches, a missing `approved:` line, and a loop that has
+`done` step with no `findings.md`, a *Resources* path under `../` that no
+longer resolves, a screen no journey reaches, a missing or still-`pending`
+`approved:` line, an open `NEEDS REPLANNING` escalation, unreconciled
+`findings.md` files while steps are still planned, and a loop that has
 run past its ceiling. Exit 0 clean, 1 on problems.
 
 Run it between stages — after planning, and after each merge. It is free and
 instant, and every one of those failures is invisible until something builds
-against it.
+against it. One state is expected rather than alarming: **immediately after a
+merge**, the just-finished step's `findings.md` is unreconciled while other
+steps are still planned, so the check exits 1 telling you to run
+`reconcile-agent` first. That is the check working — run reconcile, then run
+it again; a project only ever ends clean after its final reconciliation.
 
 ## The run log
 
@@ -447,8 +466,13 @@ itself. That is not a control.
 two audit rounds *per scope*, three review rounds *per step*, two market and
 judgment rounds *per target*. So `check-workbench` counts rows grouped by
 `(agent, loop)` — write the scope for `audit-agent`, the step directory for
-`review-agent`, the target for `market-agent` and `judge-agent`, and keep it
-byte-identical across a loop's rounds. Counted per agent instead, three
+`review-agent` and `verify-agent`, the target for `market-agent`,
+`judge-agent`, and `product-agent`, and keep it
+byte-identical across a loop's rounds. Two identities are made up as you go,
+one per occurrence: a `plan-judge-agent` run triggered by `reconcile-agent`
+gets `reconcile-<today>` — each reconciliation is its own loop, and logging
+it as `plan` would trip the planning ceiling on every healthy project — and
+`scout-agent` gets `scout`. Counted per agent instead, three
 parallel audit scopes read as a runaway loop and the check fails on every
 healthy project, which is how a check stops being read.
 

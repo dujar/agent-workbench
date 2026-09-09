@@ -149,9 +149,14 @@ verdict itself: a caller matching the line exactly should not have to strip
 markdown first:
 
 ```
-VERDICT: <one of: CLEAN   |   NO-GO — <which gate>   |   <n> loose ends>
-wrote: <the path(s)>
+VERDICT: <one of: CLEAN   |   NO-GO — <which gate>   |   <n> loose ends   |   STOPPED — <reason>>
+wrote: <the path(s), or none if you stopped>
 ```
+
+`STOPPED — <reason>` covers the briefing-contract stops: no repository root
+named, no plan given. A caller grepping for `VERDICT:` must be able to tell a
+clean stop from a crash; write `wrote: (none)` when you stopped before
+writing.
 
 Nothing else. Do not restate your findings, recap your reasoning, or explain
 what you did — the caller can open the file, and a summary that drifts from

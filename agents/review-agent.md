@@ -27,7 +27,9 @@ missing, stop and say so.
 
 Read that step's `plan.md` first, then the diff against the integration branch
 — which may be `main`, `master`, or something else entirely, so ask git rather
-than assuming:
+than assuming. Note that the diff command below works no matter which branch
+is checked out — you do not need the step branch in your working tree, only
+the right `$ROOT`.
 
 ```
 ROOT=<the absolute repository root your dispatch named>
@@ -147,9 +149,16 @@ verdict itself: a caller matching the line exactly should not have to strip
 markdown first:
 
 ```
-VERDICT: <one of: APPROVED   |   APPROVED — <m> non-blocking notes   |   <n> blocking>
-wrote: <the path(s)>
+VERDICT: <one of: APPROVED   |   APPROVED — <m> non-blocking notes   |   <n> blocking   |   STOPPED — <reason>>
+wrote: <the path(s), or none if you stopped>
 ```
+
+`STOPPED — <reason>` covers the briefing-contract stops: no root named, BASE
+equal to the branch under review, an empty diff, a branch that does not
+exist. Without the shape, a caller grepping for `VERDICT:` reads your stop as
+a crash — or worse, as silence where a verdict should be, which is how an
+unreviewed diff gets merged on a retry. Write `wrote: (none)` when you
+stopped before writing.
 
 Nothing else. Do not restate your findings, recap your reasoning, or explain
 what you did — the caller can open the file, and a summary that drifts from

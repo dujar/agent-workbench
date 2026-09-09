@@ -7,7 +7,10 @@
 # Exit:  0 clean, 1 problems found.
 
 set -uo pipefail
-WB="${1:-.agent-workbench}"
+# The directory comes from the argument, else the WB environment variable —
+# wb-log accepts WB=, and the two scripts disagreeing silently checks the
+# wrong tree while reporting success.
+WB="${1:-${WB:-.agent-workbench}}"
 FAIL=0
 say() { printf '%s\n' "$*"; }
 bad() { printf '  ✗ %s\n' "$*"; FAIL=1; }
@@ -21,8 +24,13 @@ if [ -d "$WB/product" ]; then
     [ -f "$WB/product/$f" ] || bad "missing $f"
   done
   if [ -f "$WB/product/state.md" ]; then
-    grep -qE '^approved:' "$WB/product/state.md" \
-      || bad "state.md has no 'approved:' line — plan-agent's gate cannot be evaluated"
+    # "approved: pending" is the placeholder product-agent itself writes; the
+    # gate passes only on a real date, or the check approves nothing.
+    if ! grep -qE '^approved:' "$WB/product/state.md"; then
+      bad "state.md has no 'approved:' line — plan-agent's gate cannot be evaluated"
+    elif grep -qE '^approved:[[:space:]]*(pending|)[[:space:]]*(#.*)?$' "$WB/product/state.md"; then
+      bad "state.md says 'approved: pending' — no approval on record"
+    fi
     # loop ceilings are self-counted by the agent; check them from outside
     for a in market-agent judge-agent; do
       n=$(grep -oE "^$a: *([0-9]+) run" "$WB/product/state.md" | grep -oE '[0-9]+' | head -1)
@@ -78,9 +86,9 @@ if [ -f "$RECON" ]; then
   start=$(grep -n '^## Round ' "$RECON" | tail -1 | cut -d: -f1)
   last_round=$([ -n "$start" ] && tail -n "+$start" "$RECON")
   if printf '%s\n' "$last_round" | grep -qi "NEEDS REPLANNING" \
-     && ! printf '%s\n' "$last_round" | grep -qi "Resolved by step"; then
+     && ! printf '%s\n' "$last_round" | grep -qiE "Resolved by (removing )?step"; then
     say "reconciliation/"
-    bad "reconciliation.md's last round is NEEDS REPLANNING with no 'Resolved by step' line after it — plan-agent has not closed this out"
+    bad "reconciliation.md's last round is NEEDS REPLANNING with no 'Resolved by (removing) step' line after it — plan-agent has not closed this out"
   fi
 fi
 

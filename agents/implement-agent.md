@@ -269,6 +269,10 @@ Two rules make this safe:
 
 - **Three rounds is the ceiling.** If review still blocks after three, report
   `BLOCKED` and stop. Something is wrong with the plan, not with the attempt.
+  On `BLOCKED`, say in your report that the caller must copy your
+  `findings.md` from the branch to the integration branch — a blocked branch
+  never merges, so the lessons in it never reach `reconcile-agent` unless the
+  caller salvages the file before the worktree goes away.
 
 **Find the verdict, do not read for it.** `review-agent` answers on a line
 starting `VERDICT:`. Look for that line anywhere in its report and act on what
