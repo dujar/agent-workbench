@@ -254,6 +254,19 @@ When every step is planned, invoke `plan-judge-agent`. It reads the whole set
 and asks the only question you cannot ask yourself: do these steps, in this
 order, arrive at the product?
 
+If your context has no spawn tool — ZCode strips `Agent(...)` from spawned
+agents whatever the frontmatter registers — you cannot run that check, and
+judging your own plan set is not a fallback: the question is "would anyone
+else, reading only these files, reach the product", and you have been reading
+them for an hour. Stop with the plans written and the tracker updated: do not
+count a judgment run, and report the dispatch that unblocks you — the caller
+spawns `plan-judge-agent`, then re-invokes you with its verdict. On
+re-invocation, read `plan-judgment.md`, close the gaps, and stop again for
+the second round. Each round is a fresh spawn through the caller (the
+resume-by-send pattern below needs `SendMessage`); what changed since the
+last round travels in the caller's dispatch, so say it in your report when
+you hand back.
+
 Close its gaps and run it again. Record each run in the tracker header — the
 count is how the loop ends.
 

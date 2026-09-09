@@ -63,7 +63,10 @@ ZCode installs this plugin and registers all eleven agents, but spawned
 agents there get no spawn tool — the `Agent(...)` requests in the frontmatter
 are recorded and then stripped — so the agent-to-agent delegation the
 definitions describe cannot run from inside an agent. The fix is flattened
-orchestration: your session performs the inner dispatches itself.
+orchestration, and the plugin ships it as a skill: **`/workbench`** is the
+dispatcher protocol for exactly this. Invoke it when a run starts or resumes
+and it drives every inner dispatch from your session — the only place the
+spawn tool lives.
 
 - `product-agent` marks the delegated passes `pending dispatch` and returns a
   spawn list; you run `market-agent`, then `judge-agent`, then the three
@@ -262,7 +265,10 @@ a step back to why it exists is a grep, not a separate index to keep in sync.
 ## Who orchestrates what
 
 You (or the main agent) drive the outer loop. The subagents cannot talk to you
-and cannot see each other.
+and cannot see each other. The protocol below ships as a skill — invoke
+`/workbench` (or let the session load it when a run starts) rather than
+holding it in your head; it also covers the dispatch requests the flattened
+loops on ZCode produce.
 
 1. Any `findings.md` whose `reconciled:` line carries no date → run
    `reconcile-agent` once, with no builders running. The value, never the line.
