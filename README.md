@@ -52,6 +52,11 @@ diff the cache against the repo:
 diff -rq ~/.claude/plugins/cache/agent-workbench/agent-workbench/*/agents agents
 ```
 
+Changing a definition is more than editing prose: the definitions parse each
+other's files and grep each other's verdict lines, so a format change ripples.
+[AGENTS.md](AGENTS.md) lists the parse contracts and their readers — read it
+before changing anything under `agents/`, `bin/`, or `skills/`.
+
 `claude plugin details agent-workbench` shows the component inventory and what
 it costs — roughly 1.3k tokens always-on for the eleven descriptions, and
 1.7k–8.2k per agent invocation. `claude plugin disable agent-workbench` turns it off for
@@ -367,7 +372,7 @@ loop with no exit is how work dies in review instead of shipping.
 work to `.agent-workbench/` and returns only a `VERDICT:` line and the paths it
 wrote. Nothing restates its findings in the reply. Two reasons: the caller has
 Read, so a summary is a second copy that drifts from the first — and a pipeline
-where ten agents each narrate into the orchestrator's context fills it with
+where eleven agents each narrate into the orchestrator's context fills it with
 prose nobody reads. Open the file.
 
 **Verdicts are labelled, not positional.** Every agent another agent acts on
@@ -377,9 +382,12 @@ callers grep for that line rather than reading the first one. This started as a
 first-line rule and was changed after testing: agents kept opening with a line
 of throat-clearing and pushing a perfectly good verdict to line three. Position
 is not a contract a language model reliably honours; a label is one it can
-satisfy while still being chatty.
+satisfy while still being chatty. Stops follow the same rule:
+`VERDICT: STOPPED — <reason>` for every briefing-contract refusal (no
+approval, nothing to plan, wrong base, no such branch), so a caller grepping
+for `VERDICT:` can tell a clean stop from a crash.
 
-**Reasoning is tiered, and the tiers were set by testing.** Six of ten agents
+**Reasoning is tiered, and the tiers were set by testing.** Six of eleven agents
 run on Sonnet. Opus is reserved for the four that write or rewrite something
 everything downstream inherits — `plan-agent` (at `max`, because a bad plan is
 copied into every step after it), `implement-agent`, `reconcile-agent`,
@@ -389,6 +397,31 @@ costs*.
 
 **Green is a real answer.** Every judge and auditor is told to pass cleanly when
 the work holds. One that always finds something teaches everyone to ignore it.
+
+## How this is tested
+
+The definitions are prose, so they are tested the way prose fails: by being
+run. Each release goes through sandbox scenarios — a throwaway git repo, a
+seeded `.agent-workbench/`, a scripted user persona, and one driver that plays
+each agent by its definition literally, logging every invocation through
+`wb-log` and staging through `check-workbench`. A scenario passes when it
+completes, every checkpoint holds, and `check-workbench` exits 0 at every
+stage it should. The current suite is 30 scenarios: discovery (vague, picky,
+and pivoting users; resume-from-state; judge attacks), epics on shipped
+products, planning and its escalation paths, the build loop (clean merges,
+stops, resumes, parallel worktrees, review ceilings), reconciliation, and a
+27-case invariant battery against the two scripts.
+
+The last full pass found and fixed ten bugs, all of the kind a review of the
+prose would never catch: a run-log pipe character that defeated the loop
+ceiling, an approval gate that passed on `approved: pending`, a judge ceiling
+no healthy project could stay under, stop paths no caller could parse. That is
+the argument for the method — the bugs live in what one file writes and
+another parses, which is exactly what a scenario drives and a read misses.
+
+If you change a contract, re-run a scenario against it. If you change a
+script, build the fixture and record expected against actual. Both are cheap;
+the failures they catch are not.
 
 ## Running on a non-Anthropic backend
 
