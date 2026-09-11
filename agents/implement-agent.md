@@ -23,8 +23,14 @@ Read, in this order:
 1. That step's `plan.md`, in full — including every path in its *Resources*
    block. The plan is written to be sufficient on its own; if it is not, that
    is a finding, not a licence to improvise.
-2. `CLAUDE.md` / `AGENTS.md` at the repo root.
-3. `.agent-workbench/step-feature-state.md` — confirm **every** step in your
+2. Every file on the plan's `knows:` line, if it has one. **A knowledge file
+   outranks your memory.** `.agent-workbench/knowledge/` holds what
+   `knowledge-agent` verified against a registry or a changelog — a current
+   version, an API that moved, a footgun in this stack. You cannot reach
+   either; it could. Where one contradicts what you would have written, it is
+   right and you are out of date. That is the entire reason it exists.
+3. `CLAUDE.md` / `AGENTS.md` at the repo root.
+4. `.agent-workbench/step-feature-state.md` — confirm **every** step in your
    `depends on` column reads `done`. Anything else — `planned`, `blocked`, or
    a row someone is building right now — means stop and report
    `STOPPED — dependency <n> is <status>`. Do not start and hope it lands

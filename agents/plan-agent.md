@@ -157,11 +157,24 @@ an implementer needs for that feature and nothing else.
 - theme:    ../product/theme.css
 - exists:   src/auth/session.rs:40
 - learned:  ../step-2-discount/findings.md
+- knows:    ../knowledge/wrangler.md, ../knowledge/stripe-api.md
 ```
 
 **Link, never copy.** A copied mockup gets edited in one place and goes stale
 in the other, and nobody finds out until the built screen matches neither.
 One click away is close enough.
+
+**`knows:` points at the knowledge files this step's code will contradict
+without.** `.agent-workbench/knowledge/` is where `knowledge-agent` records
+what is actually true about a dependency right now — the current version, the
+API that moved, the footgun in this stack — and it exists because no agent
+that writes or reviews code in this pipeline can reach a registry or a
+changelog. They build from training memory unless a plan puts the correction
+in front of them. Link every file whose topic this step touches, and no
+others: a plan that links all eight makes the implementer read eight. If
+`knowledge/` is empty or absent, omit the line — but if this step introduces a
+dependency nothing in there covers, say so in the plan, because the caller
+should run `knowledge-agent` before anybody builds against it.
 
 **`learned:` points at the `findings.md` of every step this one depends on.**
 The exact path is `../step-<n>-<feature>/findings.md`, matching the directory

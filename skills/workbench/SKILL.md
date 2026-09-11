@@ -56,7 +56,8 @@ phase you are in; your memory of this chat does not.
 | no workbench, no idea what to build | scouting | `scout-agent` |
 | no workbench, an idea | discovery, round 1 | `product-agent` with the idea |
 | `product/state.md`, no `approved:` | mid-discovery | `product-agent` with the new answers, plus any `pending dispatch` below |
-| `state.md` `approved:` (or an approved epic row), no tracker | planning | `plan-agent` |
+| `state.md` `approved:` (or an approved epic row), no `knowledge/` | knowledge | `knowledge-agent` on the approved target |
+| `knowledge/`, no tracker | planning | `plan-agent` |
 | `step-feature-state.md` | build | the build loop |
 | a receipt naming a dispatch | wherever it came from | that dispatch, then re-invoke its caller |
 
@@ -84,10 +85,31 @@ Its receipt is one of:
 `NO SOURCES` from `market-agent` is a missing picture, not an empty one —
 relay it as such and let `product-agent` record it.
 
+## Knowledge — before anything gets planned against it
+
+The moment the spec is approved, spawn `knowledge-agent` on it, once. No
+agent that plans, builds, verifies or reviews in this pipeline can reach a
+registry or a changelog; they work from training memory, and they agree with
+each other while doing it. `knowledge-agent` is the only correction, and it
+has to land before `plan-agent` writes tasks naming APIs that moved.
+
+Its receipt is `<n> topics`, `NOTHING SURPRISING` — a good outcome, not a
+failed pass; carry on — or `NO SOURCES`, which means the building agents are
+about to work from memory alone. Say that to the user plainly rather than
+letting it pass as a clean run; a stack they know is post-cutoff may be worth
+fixing the search for first.
+
+Run it again, on the named dependency only, whenever one appears that
+`.agent-workbench/knowledge/` does not cover — `plan-agent` says so in a
+plan, `verify-agent` returns it as a loose end, or a step is about to add a
+library nothing has verified. It is a cheap pass; a step built against a
+remembered API is not.
+
 ## Planning — plan-agent, then its judge
 
 Spawn `plan-agent` with the goal and the paths in scope: the spec or epic
-file, the tracker, `journeys.md`, the screens. Its own judge loop either
+file, the tracker, `journeys.md`, the screens, and
+`.agent-workbench/knowledge/` if it exists. Its own judge loop either
 runs inside it or, on platforms that forbid nesting, comes back as a
 dispatch request: spawn `plan-judge-agent` on `.agent-workbench/`, read
 `plan-judgment.md` for its verdict, and re-invoke `plan-agent` with the

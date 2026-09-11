@@ -47,6 +47,26 @@ if [ -d "$WB/product" ]; then
   fi
 fi
 
+# ---- knowledge -----------------------------------------------------------
+# These files are the only thing correcting training memory for every agent
+# that writes or reviews code, so they are trusted over what those agents
+# already believe. An unsourced or undated one is therefore worse than absent:
+# it gets enforced, not questioned.
+if [ -d "$WB/knowledge" ]; then
+  shopt -s nullglob
+  KFILES=("$WB"/knowledge/*.md)
+  shopt -u nullglob
+  if [ ${#KFILES[@]} -gt 0 ]; then
+    say "knowledge/"
+    for k in "${KFILES[@]}"; do
+      b=$(basename "$k")
+      v=$(grep -m1 -E '^checked:' "$k" | sed -E 's/^checked:[[:space:]]*//; s/#.*$//' | tr -d '[:space:]')
+      [ -z "$v" ]         && bad "knowledge/$b has no 'checked:' date — nothing can tell whether it is stale"
+      grep -qE 'https?://' "$k"         || bad "knowledge/$b cites no source — every agent trusts it over its own memory, so an unsourced claim is enforced rather than checked"
+    done
+  fi
+fi
+
 # ---- tracker -------------------------------------------------------------
 shopt -s nullglob
 STEPDIRS=("$WB"/step-*/)

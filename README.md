@@ -1,6 +1,6 @@
 # agent-workbench
 
-Eleven subagents for [Claude Code](https://claude.com/claude-code) that carry
+Twelve subagents for [Claude Code](https://claude.com/claude-code) that carry
 a product from a vague idea — or no idea at all — to merged code, with a judge
 at every handoff.
 
@@ -58,13 +58,13 @@ other's files and grep each other's verdict lines, so a format change ripples.
 before changing anything under `agents/`, `bin/`, or `skills/`.
 
 `claude plugin details agent-workbench` shows the component inventory and what
-it costs — roughly 1.3k tokens always-on for the eleven descriptions, and
+it costs — roughly 1.4k tokens always-on for the twelve descriptions, and
 1.7k–8.2k per agent invocation. `claude plugin disable agent-workbench` turns it off for
 projects that do not need it.
 
 ### Running under ZCode
 
-ZCode installs this plugin and registers all eleven agents, but spawned
+ZCode installs this plugin and registers all twelve agents, but spawned
 agents there get no spawn tool — the `Agent(...)` requests in the frontmatter
 are recorded and then stripped — so the agent-to-agent delegation the
 definitions describe cannot run from inside an agent. The fix is flattened
@@ -103,6 +103,9 @@ applies too; the plugin UI's update button replaces `claude plugin update`.
        │  (asks you up to four questions at a time, with options)
        ▼
    ★ your approval  ──────────────────────────────────────────
+       │
+       ▼
+   knowledge-agent   (what is actually true about the stack, right now)
        │
        ▼
    plan-agent ──> plan-judge-agent
@@ -177,7 +180,41 @@ approved: 2026-09-08
 `plan-agent` reads it and refuses to run without it. An approval nobody wrote
 down is an approval that gets re-litigated after the plan exists.
 
-### 3. Plan — `plan-agent`
+### 3. Learn the stack — `knowledge-agent`
+
+Of the twelve agents, exactly two could reach the internet before this one:
+`scout-agent` and `market-agent` — and neither ever touches code. Everything
+that plans, writes, verifies and reviews works from training memory, and
+because they share a cutoff they agree with each other about a library that
+moved eighteen months ago. Nothing in the loop catches it: the reviewer is as
+out of date as the implementer, so a dead API passes review on the reviewer's
+authority.
+
+`knowledge-agent` is the correction. It resolves what `spec.md` left as
+"latest stable" into a real version, reads the changelog between what a model
+remembers and what shipped, and writes one file per topic to
+`.agent-workbench/knowledge/`.
+
+Each file is a **diff against what a model already believes**, never
+documentation — the version that is actually current, the export that got
+renamed, the argument that became required, the two dependencies that need a
+specific pairing. If reading the docs confirms what it would have assumed
+anyway, it writes one line saying so and stops. Forty lines is the ceiling and
+every claim carries the URL it came from.
+
+`plan-agent` then links the relevant files on each plan's `knows:` line, and
+`implement-agent`, `verify-agent` and `review-agent` are all told the same
+thing: **a knowledge file outranks your memory — that is what it is for.**
+Which is exactly why it returns `NO SOURCES` and writes nothing rather than
+guessing. A file that gets trusted over everyone's recollection is the worst
+possible place for a remembered API shape; silence leaves every agent as
+well-informed as it already was, and a confident wrong file makes them worse
+without anyone finding out.
+
+`NOTHING SURPRISING` is a real verdict and a common one. Run it again when a
+new dependency appears that nothing in `knowledge/` covers.
+
+### 4. Plan — `plan-agent`
 
 Splits the spec into **phases** of **steps**, one directory per feature:
 
@@ -199,7 +236,7 @@ Then `plan-judge-agent` checks the set as a set: does every spec goal have a
 step, do the dependencies form a real order, does anything fall between two
 steps, is the product actually finished when the last one lands.
 
-### 4. Build — `implement-agent`
+### 5. Build — `implement-agent`
 
 One agent per step, on its own branch. Before building it runs `verify-agent`
 against the current code, because the codebase has moved since the plan was
@@ -217,7 +254,7 @@ Agent(subagent_type: "implement-agent", isolation: "worktree",
       prompt: "Build .agent-workbench/step-4-project-list/")
 ```
 
-### 5. Reconcile — `reconcile-agent`
+### 6. Reconcile — `reconcile-agent`
 
 Every step writes a `findings.md`: what was built, **where the plan was wrong**,
 what the next step inherits, what it left broken on purpose.
@@ -314,6 +351,7 @@ loops on ZCode produce.
 | `market-agent` | sonnet / medium | Web research on whatever `target` names: competitors, metrics, complaints | `product/market.md` |
 | `judge-agent` | sonnet / high | Adversarial holes in whatever `target` names | `product/judgment.md` |
 | `audit-agent` | sonnet / medium | One scope of thoroughness against `target` — `spec`, `journeys`, or `screens` | `product/audit-<scope>.md`, or `-epic-<n>` for an epic |
+| `knowledge-agent` | sonnet / medium | What the building agents do not know: real versions, APIs that moved since the cutoff, footguns in this stack | `knowledge/*.md` |
 | `plan-agent` | **opus / max** | Phases and steps, one plan per feature — v1 or the next approved epic | `step-*/plan.md`, the tracker |
 | `plan-judge-agent` | sonnet / high | Does the plan set reach a finished product, and can its parallel steps actually run in parallel? | `plan-judgment.md` |
 | `verify-agent` | sonnet / high | Does one plan survive contact with the code? | `step-*/verify.md` |
@@ -381,7 +419,7 @@ loop with no exit is how work dies in review instead of shipping.
 work to `.agent-workbench/` and returns only a `VERDICT:` line and the paths it
 wrote. Nothing restates its findings in the reply. Two reasons: the caller has
 Read, so a summary is a second copy that drifts from the first — and a pipeline
-where eleven agents each narrate into the orchestrator's context fills it with
+where twelve agents each narrate into the orchestrator's context fills it with
 prose nobody reads. Open the file.
 
 **Verdicts are labelled, not positional.** Every agent another agent acts on
@@ -396,7 +434,7 @@ satisfy while still being chatty. Stops follow the same rule:
 approval, nothing to plan, wrong base, no such branch), so a caller grepping
 for `VERDICT:` can tell a clean stop from a crash.
 
-**Reasoning is tiered, and the tiers were set by testing.** Six of eleven agents
+**Reasoning is tiered, and the tiers were set by testing.** Seven of twelve agents
 run on Sonnet. Opus is reserved for the four that write or rewrite something
 everything downstream inherits — `plan-agent` (at `max`, because a bad plan is
 copied into every step after it), `implement-agent`, `reconcile-agent`,
@@ -477,8 +515,9 @@ step that does not exist or is built later, a status nothing ever writes, a
 `done` step with no `findings.md`, a *Resources* path under `../` that no
 longer resolves, a screen no journey reaches, a missing or still-`pending`
 `approved:` line, an open `NEEDS REPLANNING` escalation, unreconciled
-`findings.md` files while steps are still planned, and a loop that has
-run past its ceiling. Exit 0 clean, 1 on problems.
+`findings.md` files while steps are still planned, a knowledge file with no
+`checked:` date or no source URL, and a loop that has run past its ceiling.
+Exit 0 clean, 1 on problems.
 
 It also prints the plan's shape, which fails nothing and is worth reading
 anyway:
@@ -578,7 +617,7 @@ The rule that came out of this is not "judgement needs Opus" — it is that
 reasoning about *numerical or semantic edge cases inside code* needs Opus,
 while reading documents for what is missing does not.
 
-The result: six of eleven agents run on Sonnet, where before all but two ran
+The result: seven of twelve agents run on Sonnet, where before all but two ran
 on Opus. Moving the
 judgement-heavy ones to Sonnet is roughly a 5× cost cut, and it is a real
 trade — under test, `review-agent` on Opus mutation-tested a suite and caught a

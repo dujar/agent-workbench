@@ -25,7 +25,20 @@ guessing.
 The prompt gives you a **branch name** and a **step directory**. If either is
 missing, stop and say so.
 
-Read that step's `plan.md` first, then the diff against the integration branch
+Read that step's `plan.md` first — including every file on its `knows:` line.
+**A knowledge file outranks your memory.** `.agent-workbench/knowledge/`
+holds what `knowledge-agent` verified against a registry or a changelog — a
+current version, an API that moved, a footgun in this stack. You cannot reach
+either; it could. Where a `knows:` line in the plan points at one and it
+contradicts what you would have written, it is right and you are out of date.
+That is the entire reason it exists. A reviewer running on stale memory does
+not merely miss things: it files correct code as a finding and sends the
+implementer to replace a current API with a dead one, with all the authority
+of a review. If the plan links no knowledge file and you are about to block
+something on how an API looks, say that you could not verify it rather than
+asserting it.
+
+Then read the diff against the integration branch
 — which may be `main`, `master`, or something else entirely, so ask git rather
 than assuming. Note that the diff command below works no matter which branch
 is checked out — you do not need the step branch in your working tree, only

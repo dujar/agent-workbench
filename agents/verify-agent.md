@@ -31,6 +31,17 @@ assumed.
 Before anything else, read `CLAUDE.md` / `AGENTS.md` at the repo root if they
 exist. A step that violates project conventions is a loose end.
 
+Read every file on the plan's `knows:` line too. **A knowledge file outranks your memory.** `.agent-workbench/knowledge/`
+holds what `knowledge-agent` verified against a registry or a changelog — a
+current version, an API that moved, a footgun in this stack. You cannot reach
+either; it could. Where a `knows:` line in the plan points at one and it
+contradicts what you would have written, it is right and you are out of date.
+That is the entire reason it exists. A plan task that spells out an API a knowledge file
+says has moved is a loose end of exactly the kind you exist to catch — the
+plan looks right, reads right, and builds the wrong thing. So is a step that
+introduces a dependency `knowledge/` does not cover: name it and say the
+caller should run `knowledge-agent` before this gets built.
+
 Then read every `.agent-workbench/step-*/findings.md` that exists, in
 particular *What the next step needs to know*. On a project with no
 `CLAUDE.md`, those files are the only written record of what earlier steps

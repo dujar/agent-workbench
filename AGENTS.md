@@ -56,6 +56,15 @@ with their readers, never unilaterally:
   orchestrator batches on it: a run of `none` goes through one picker call,
   anything else is asked alone. A missing field means "ask alone", so dropping
   it is safe but silently restores the serial question queue.
+- **`knows:` and `knowledge/*.md`** — `knows:` is a Resources line listing the
+  knowledge files a step's code would contradict without; it resolves like
+  every other Resources path, so `check-workbench` already validates it.
+  Each file carries a `checked:` **date** and at least one source URL, both
+  checked. The load-bearing part is not the format but the rule wired into
+  `implement-agent`, `verify-agent` and `review-agent`: a knowledge file
+  outranks the agent's own memory. That is what makes `knowledge-agent`'s
+  `NO SOURCES` path non-negotiable — an unverified claim in here is enforced
+  by review rather than caught by it.
 - **Tracker statuses** — `planned`, `done`, `blocked`, nothing else, because
   nothing else is ever written. The status column belongs to the
   orchestrator; builders never commit `step-feature-state.md`.
