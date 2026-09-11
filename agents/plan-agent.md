@@ -245,18 +245,33 @@ Then, across every phase:
 - **Order by dependency, and say the dependency out loud** in the tracker. If
   two steps do not depend on each other, number them anyway — someone has to
   pick.
-- **Two steps that edit the same file depend on each other**, whether or not
-  one needs the other's behavior. Steps with no declared dependency get built
-  in parallel, on separate branches, and land as a merge conflict in a file
-  neither implementer has read the other's version of. Before you leave a
-  dependency blank, compare the two steps' *Scope* sections: any file in both
-  means the later one depends on the earlier. Say so in the tracker.
+- **A dependency is behavior, not a file.** Step B depends on step A when B
+  reads code, a schema column, a route, or a contract that A creates. That is
+  the only edge worth serializing a build for. Say it out loud in the tracker.
+- **Shared append-point files do not create dependencies.** A route table, a
+  `migrations/` directory, a module list, a binding block in a config, a
+  component index — every feature appends to these, and chaining every feature
+  because they all append is how a plan set with no real order becomes a
+  straight line that builds one step at a time. Name the file in *Scope* as an
+  append point, keep the dependency blank, and let the merge — which the
+  caller does one branch at a time, running the suite after each — take the
+  three-line conflict. Only a step that **rewrites** such a file, or edits the
+  same region another step edits, earns the edge.
+- **Count your chain before you finish.** If the tracker's `depends on` column
+  is a straight line from the first feature to the last, you have planned a
+  sequential build; go back and cut every edge that is not behavior. A phase-2
+  feature set should fan out from its foundation, not queue behind it.
 - **Prefer plans that do not overlap.** If two features keep colliding in one
   file — a router, a schema, a config — that file usually belongs to a phase-1
   step that both then extend. Give it an owner early and the parallel steps
   stop fighting.
 - **A step nobody could build in a sitting is two steps.** If one `plan.md`
   runs past a dozen tasks, split the feature.
+- **A chained pair with nothing beside it is one step.** Splitting buys
+  parallelism; where there is no parallelism to buy it costs a verify pass, a
+  review loop, a reconcile round and a merge for nothing. If step B depends on
+  A, and no third step can run alongside either, ask whether they are one
+  feature written twice. Split for width, merge for depth.
 - **Do not invent product features the spec does not have.** Four goals means
   four phase-2 steps, not seven. Phases 1 and 3 are different — those are not
   features, and leaving them out does not make the plan shorter, only wrong.

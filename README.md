@@ -100,7 +100,7 @@ applies too; the plugin UI's update button replaces `claude plugin update`.
        │
        ▼
   product-agent ──> market-agent ──> judge-agent ──> audit-agent ×3
-       │  (asks you one question at a time, with options)
+       │  (asks you up to four questions at a time, with options)
        ▼
    ★ your approval  ──────────────────────────────────────────
        │
@@ -153,9 +153,11 @@ Grills you until the idea is buildable, in six phases, in this order:
 | 5 | User journeys and HTML mockups |
 | 6 | `audit-agent` ×3 in parallel — spec, journeys, screens |
 
-It asks **one question at a time, with options**, recommended answer first, so
-you approve rather than compose. Phases 2 and 3 are loops, capped at two passes
-each — a spec that dies in research never ships.
+It asks **in batches of up to four, with options**, recommended answer first,
+so you approve rather than compose. Every question declares what it blocks;
+independent ones go through the picker together, and a question whose answer
+could retire a later one is asked alone. Phases 2 and 3 are loops, capped at
+two passes each — a spec that dies in research never ships.
 
 It returns `READY` and stops. Nothing gets planned until you say yes.
 
@@ -339,11 +341,18 @@ writing anything: does this need to exist → is it already in this repo → std
 minimum that works. Deliberate shortcuts get a `ponytail:` comment naming the
 ceiling and the upgrade path.
 
-**Two steps that touch the same file depend on each other**, even when neither
-needs the other's behavior. Undeclared, they get built in parallel on separate
-branches and land as a merge conflict rather than an error. `plan-agent`
-declares those dependencies from the plans' *Scope* sections, and
-`plan-judge-agent` re-checks every parallel pair for a file in both.
+**A dependency is behavior, not a file.** Step B depends on step A when it
+reads a route, a column, a helper or a contract A creates — that is the only
+edge worth serializing a build for. Shared append points are not dependencies:
+a route table, a `migrations/` directory, a module list, a config binding block
+collects a line from every feature, and chaining every feature because they all
+append turns a plan set with no real order into a straight line that builds one
+step at a time. Those land as a three-line merge conflict, which is exactly
+what merging one branch at a time and running the suite after each is for. A
+file two steps **rewrite**, or a region both edit, still earns the edge —
+`plan-judge-agent` checks every parallel pair for one, and separately checks
+that the set has not come out as a chain. `check-workbench` prints the shape:
+`plan shape: 17 steps, critical path 8, widest batch 4`.
 
 **Loops resume; they do not respawn.** A loop's second round sends a message
 to the same agent instead of spawning a new one, so it picks up from its own
@@ -470,6 +479,19 @@ longer resolves, a screen no journey reaches, a missing or still-`pending`
 `approved:` line, an open `NEEDS REPLANNING` escalation, unreconciled
 `findings.md` files while steps are still planned, and a loop that has
 run past its ceiling. Exit 0 clean, 1 on problems.
+
+It also prints the plan's shape, which fails nothing and is worth reading
+anyway:
+
+```
+  plan shape: 17 steps, critical path 8, widest batch 4
+```
+
+`critical path` is the longest dependency chain — the number of build rounds
+the plan needs however many builders you spawn. `widest batch` is the most
+steps that can ever run at once. When most of the steps sit on the path it
+warns, because that is a plan that will build one step at a time and the
+depends-on column is where to look.
 
 Run it between stages — after planning, and after each merge. It is free and
 instant, and every one of those failures is invisible until something builds

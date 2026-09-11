@@ -183,6 +183,34 @@ if [ -f "$TRACKER" ]; then
       done < <(echo "$deps" | tr ',' '\n') ;;
     esac
   done < <(printf '%s\n' "$rows")
+
+  # ---- plan shape: how many builders can actually run? ---------------------
+  # The depends-on column is the only thing that decides build width. A plan
+  # whose critical path is most of its steps builds one step at a time however
+  # many implement-agents the caller spawns — the largest wall-clock cost in
+  # this pipeline, and invisible unless something counts it. Rows point
+  # backwards (checked above), so depth needs one pass in row order.
+  printf '%s\n' "$rows" | awk -F'|' '
+    { gsub(/ /,"",$2); gsub(/ /,"",$7)
+      if ($2 ~ /^[0-9]+$/) { dep[$2]=$7; order[++n]=$2 } }
+    END {
+      if (n == 0) exit
+      for (i=1; i<=n; i++) {
+        s = order[i]; d = 1
+        split(dep[s], p, ",")
+        for (j in p) if (p[j] ~ /^[0-9]+$/ && depth[p[j]] >= d) d = depth[p[j]] + 1
+        depth[s] = d
+        if (d > path) path = d
+        if (++wide[d] > width) width = wide[d]
+      }
+      printf "  plan shape: %d steps, critical path %d, widest batch %d\n", n, path, width
+      # Three quarters of the steps on the path is a chain in disguise. A
+      # healthy set fans out: a 17-step plan that builds in 8 rounds four
+      # wide is the shape this looks for, and must not warn. No apostrophes
+      # in here - the whole program is inside a single-quoted shell string.
+      if (n >= 5 && path * 4 >= n * 3)
+        printf "  \342\232\240 %d of %d steps sit on the critical path and nothing ever runs more\n      than %d wide — this build goes one step at a time however many builders\n      are spawned. Re-read the depends-on column: an edge that names a shared\n      file rather than a behavior is not a dependency.\n", path, n, width
+    }'
 fi
 
 [ $FAIL -eq 0 ] && say "clean" || say "problems found"

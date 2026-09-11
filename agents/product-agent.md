@@ -168,11 +168,11 @@ waiting on: Q7, Q8
 approved: pending
 
 ## Open
-- [ ] Q7 · Evidence · Who have you actually watched hit this problem?
+- [ ] Q7 · Evidence · blocks none · Who have you actually watched hit this problem?
       - Myself, repeatedly (Recommended)
       - Colleagues I have watched work around it
       - Nobody yet — a hunch worth testing before code
-- [ ] Q8 · Wedge · ...
+- [ ] Q8 · Wedge · blocks Q11, Q12 · ...
 
 ## Answered
 - [x] Q1 · Auth · How do people sign in? → OAuth only · round 1
@@ -448,14 +448,17 @@ comment naming the decision behind each one.
 
 ## How to grill
 
-**One question at a time, and every question has options.** The main agent puts
-them to the user through a picker, so an open-ended prompt wastes the round.
+**Every question has options, and every question says what it blocks.** The
+main agent puts them to the user through a picker that takes up to four at
+once, so an open-ended prompt wastes the round — and so does a queue that
+cannot be batched.
 
 Shape each one exactly like this:
 
 ```
 header:   Auth
 question: How do people sign in?
+blocks:   Q8, Q9
 options:
   - Email + password — nothing here needs a provider account. (Recommended)
   - OAuth only — Google and GitHub, no passwords for you to store.
@@ -463,6 +466,17 @@ options:
 ```
 
 - `header` is a chip, twelve characters at most.
+- **`blocks:` is how the queue gets asked in parallel.** List the later
+  questions this answer could retire or rewrite — `blocks: Q8, Q9` — or write
+  `blocks: none`. The caller batches runs of `none` four at a time into one
+  picker; a question that blocks anything is asked alone, and the caller comes
+  back to you with the answer before touching what it blocked. Omit the line
+  and the caller must assume the worst and ask one at a time, which is the
+  single slowest thing this pipeline does. Be honest in both directions: a
+  false `none` specs a product nobody chose, and a reflexive `blocks:` list on
+  every question buys back the serial queue you were avoiding. Most questions
+  in a round genuinely block nothing — an auth choice and a pricing choice and
+  a hosting choice do not touch each other.
 - **Two to four options.** If you cannot think of a second, you are asking an
   open question — go research it or split it into choices.
 - **Put the one you would pick first** and mark it `(Recommended)`. Approving
@@ -476,10 +490,17 @@ options:
 Write an **ordered queue of at most eight**, most blocking first, into
 `state.md` under *Open*. That file is where the caller reads them from — it has
 Read, and a question pasted into a message is a second copy that drifts from
-the one on disk. The main agent asks them one at a
-time, in order — and comes straight back to you the moment an answer makes a later
-question wrong. "No accounts" retires the next three questions about profiles;
-asking them anyway is how a spec ends up describing a product nobody chose.
+the one on disk. The caller asks them in order, batching what blocks nothing
+and stopping at each question that blocks something — "No accounts" retires
+the next three questions about profiles, and asking them anyway is how a spec
+ends up describing a product nobody chose.
+
+**Order the queue so it batches.** Most blocking first is still the rule, but
+between two questions of equal weight put the one that blocks nothing first: a
+blocker at position 2 splits a round of eight into 1 + 1 + 6, and the same
+queue reordered asks in two picker calls instead of five. A round where
+everything blocks something is usually a round asked too early — the answers
+are not independent because the phase underneath them is not settled.
 
 Push back on answers that cannot be built:
 

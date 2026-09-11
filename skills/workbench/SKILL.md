@@ -31,13 +31,20 @@ and the tracker's status column.
 - **Independent passes spawn in parallel, in one block.** Dependent passes
   wait. One dispatch round is: spawn → read verdict → return to the agent
   that asked for the pass, with the paths of what it wrote.
-- **Questions relay one at a time, by number.** The queue is `state.md`'s
-  *Open* section, most blocking first — read it; never paste it at the user
-  wholesale. Put each question exactly as written through the question
-  picker, and record the answer verbatim, including the option they
-  rejected. If an answer picks an option the question says changes later
-  questions — or "Other" with content the options did not anticipate — stop
-  asking and go back early with what you have.
+- **Questions relay by number, batched up to the first blocker.** The queue
+  is `state.md`'s *Open* section, most blocking first — read it; never paste
+  it at the user wholesale. Each entry carries a `blocks` field. Walk the
+  queue in order and put the run of `blocks none` questions through the
+  picker together, **up to four in one call** — they are independent by the
+  asking agent's own declaration, and asking them one at a time is the
+  slowest thing this pipeline does. Stop the batch at the first question that
+  blocks something: ask that one alone, and go straight back to the agent
+  with the answer before asking anything it named. A queue entry with no
+  `blocks` field at all is a blocker — ask it alone; do not assume `none`.
+  Relay each question exactly as written, and record every answer verbatim,
+  including the option they rejected. An "Other" answer carrying content the
+  options did not anticipate ends the round wherever it lands — go back early
+  with what you have.
 
 ## Find where the run is
 
@@ -61,8 +68,8 @@ spec to it.
 
 Its receipt is one of:
 
-- `ROUND <n>, phase <p> — <k> questions queued` → relay from *Open*, one at
-  a time, and bring the answers back as a new dispatch.
+- `ROUND <n>, phase <p> — <k> questions queued` → relay from *Open* in
+  batches, per the rule above, and bring the answers back as a new dispatch.
 - `pending dispatch` in the counters → spawn what it asked for, in this
   order: `market-agent` with the `target:` line, then `judge-agent` with the
   same target, then `audit-agent` three times in one parallel block —
@@ -98,11 +105,23 @@ or `plan-agent` has hit its ceiling and told you so.
    judge check may come back as a dispatch request: run `plan-judge-agent`,
    then re-invoke `reconcile-agent` with the verdict path. It commits its
    own plan edits; you commit nothing here.
-2. **Spawn builders.** One `implement-agent` per step whose row is
-   `planned` and whose dependencies all read `done`, in parallel, each with
-   `isolation: "worktree"` and a prompt naming its step directory. A step
-   whose dependencies are not all `done` is never offered — the builder
-   refuses anyway, but the caller should not set it up to refuse.
+2. **Spawn builders — every runnable step, not the first one.** Walk the
+   whole tracker and collect every row that is `planned` with all its
+   dependencies `done`. Spawn one `implement-agent` for each, in a single
+   parallel block, each with `isolation: "worktree"` and a prompt naming its
+   step directory. Two runnable rows means two builders in that block; four
+   means four. Taking them one at a time turns a plan that was written to
+   fan out into a queue, and it is the difference between a build that takes
+   four rounds and one that takes fourteen. A step whose dependencies are
+   not all `done` is never offered — the builder refuses anyway, but the
+   caller should not set it up to refuse.
+
+   If the batch keeps coming out at one, the plan is a chain, not the
+   pipeline: `check-workbench` prints `plan shape:` with the critical path
+   and the widest batch, and warns when most steps sit on the path. Say so
+   rather than grinding through it — the fix is `plan-agent` cutting the
+   dependencies that name a shared file instead of a behavior, and it is
+   cheaper at any point in the build than the serial build it replaces.
 3. **Handle each receipt.**
    - `MERGED <branch>` → the builder ran the suite on the base branch after
      its merge. Trust but verify cheaply: `check-workbench`, and the next

@@ -51,6 +51,11 @@ with their readers, never unilaterally:
   `check-workbench` (which strips `#` comments before judging emptiness).
 - **`approved:`** — `pending` is not an approval; only a date passes
   `check-workbench`. `plan-agent` refuses without one.
+- **`blocks:`** — every queued question in `state.md`'s *Open* section carries
+  `blocks <Q-numbers>` or `blocks none`. `product-agent` writes it, the
+  orchestrator batches on it: a run of `none` goes through one picker call,
+  anything else is asked alone. A missing field means "ask alone", so dropping
+  it is safe but silently restores the serial question queue.
 - **Tracker statuses** — `planned`, `done`, `blocked`, nothing else, because
   nothing else is ever written. The status column belongs to the
   orchestrator; builders never commit `step-feature-state.md`.
@@ -92,7 +97,9 @@ that way.
 
 - `check-workbench` exit contract: 0 clean, 1 problems. Its failure list is
   documented in the README — a new check must be added to that list in the
-  same commit.
+  same commit. The `plan shape:` report is deliberately outside that contract:
+  a serial plan is a smell, not a broken invariant, and failing on it would
+  block a build that is merely slow.
 - The run-log parser splits on `|`. Column alignment is the contract.
 - Test changes against a scratch workbench dir (each fixture is a directory
   you pass as `$1` or via `WB=`), expected vs actual per case. The e2e
