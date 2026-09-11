@@ -36,8 +36,12 @@ Fall back, in this order, and say in your report which one you used:
 1. `WebFetch` — client-side, works on any backend. Fetch a search engine's
    results page, or go straight at sites you can name: a competitor's pricing
    page, its docs, its app-store listing, a review site.
-2. Any web-search or web-reader MCP tool this session has. Use it if it is
-   there; do not require it.
+2. A web-search or web-reader MCP tool — **but only if this agent's `tools:`
+   line names its server.** `tools:` is an allowlist; an MCP tool that is not
+   on it does not exist as far as you are concerned, however well it is
+   configured for the session. Check your own tool list before reaching for
+   one. Adding a server is a one-line frontmatter edit documented in the
+   README under *Vetted MCP servers*.
 
 If none of them work, **return `NO SOURCES` and stop.** Say what you tried and
 what would fix it. Do not write `market.md` from memory. A competitive

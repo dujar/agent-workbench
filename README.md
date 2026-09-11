@@ -470,6 +470,60 @@ If you change a contract, re-run a scenario against it. If you change a
 script, build the fixture and record expected against actual. Both are cheap;
 the failures they catch are not.
 
+## Vetted MCP servers
+
+The plugin ships none, on purpose. Adding them is two lines, and the reasoning
+below is why you should decide rather than inherit the decision.
+
+**`tools:` is an allowlist, and every agent here has one.** An MCP tool that
+is not named on it does not exist for that agent, however well the server is
+configured for the session. So an MCP server only reaches an agent if you say
+so:
+
+```yaml
+# agents/knowledge-agent.md
+tools: Read, Glob, Grep, Bash, Write, WebSearch, WebFetch, mcp__cloudflare-docs
+```
+
+`mcp__<server>` allows the whole server; `mcp__<server>__<tool>` allows one
+tool. The server itself comes from wherever you already configure MCP — your
+user config, the project's `.mcp.json`, or a plugin that bundles one. A plugin
+bundles servers by putting an `.mcp.json` at its root:
+
+```json
+{ "mcpServers": { "cloudflare-docs": { "type": "http", "url": "https://docs.mcp.cloudflare.com/mcp" } } }
+```
+
+Three things to weigh before you do:
+
+**Name only servers that are actually present.** A `tools:` entry that
+resolves to nothing is a launch-time error, not a silent skip. An agent
+allowlisting a server you later remove stops starting. This is the argument
+for bundling over documenting: a server the plugin ships is one every install
+has.
+
+**Tool definitions are always-on context.** The twelve agent descriptions cost
+about 1.4k tokens before anything runs; a chatty MCP server can cost more than
+that on its own, in a pipeline where replayed context is the largest single
+expense. Bundle the server that answers a question the agents actually ask.
+
+**Prefer first-party servers, especially for `knowledge-agent`.** Everything
+an MCP server returns is untrusted input. That is true everywhere, but it
+matters most here: `knowledge-agent` writes files that `implement-agent`,
+`verify-agent` and `review-agent` are all told to trust *over their own
+memory*, so a docs server is a path from somebody else's infrastructure into
+something the reviewer then enforces. A vendor's own docs server — Cloudflare
+publishing Cloudflare docs — carries the same trust as the vendor's
+documentation site. An aggregator that republishes other projects' docs is a
+new party in that chain, and a knowledge file is the worst place in this
+pipeline to add one.
+
+The stack-agnostic rule applies to servers too: `product-agent` will not
+propose a rewrite to reach a stack you are not on, and bundling that stack's
+MCP servers by default would do it through the back door. A **docs** server is
+the exception worth considering, because reading current documentation is not
+a stack choice — it is what the agents cannot otherwise do at all.
+
 ## Running on a non-Anthropic backend
 
 The pipeline works on any Claude Code backend — GLM/Z.ai, a local model, an

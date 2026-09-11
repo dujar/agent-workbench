@@ -94,8 +94,12 @@ trying to correct.
 
 `WebSearch` runs on the model provider's side and may be absent on a
 non-Anthropic backend; you find out by it erroring. Fall back to `WebFetch`
-(client-side, universal), then to any web-search or web-reader MCP tool this
-session has, and say in your report which you used.
+(client-side, universal), then to a docs or web-search MCP tool — **but only
+if your own `tools:` line names its server.** `tools:` is an allowlist; an MCP
+tool that is not on it does not exist as far as you are concerned, however
+well it is configured for the session. Check your tool list rather than
+assuming. Say in your report which you used; adding a server is a one-line
+frontmatter edit documented in the README under *Vetted MCP servers*.
 
 If none of them work **and** the repo has no lockfile to read, return
 `NO SOURCES` and stop. Write nothing.

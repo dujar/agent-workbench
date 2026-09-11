@@ -69,7 +69,10 @@ Fall back, in this order, and say which one you used:
 1. `WebFetch` — client-side, works on any backend. Go at complaint surfaces
    directly: a subreddit's search URL, a Hacker News search, a GitHub issue
    tracker, an app store's review page, a review site's one-star filter.
-2. Any web-search or web-reader MCP tool this session has.
+2. A web-search or web-reader MCP tool — **only if this agent's `tools:` line
+   names its server.** `tools:` is an allowlist; one that is not on it does not
+   exist as far as you are concerned, however well the session is configured.
+   See the README under *Vetted MCP servers*.
 
 If none work, **return `NO SOURCES` and stop.** Say what you tried. Do not
 write `scout.md` from memory. A candidate list recalled from training data
