@@ -1,6 +1,6 @@
 {
   "name": "agent-workbench",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "description": "Twelve subagents that carry a product from idea to merged code: scout candidate problems when there is no idea yet, grill the idea, research the market, judge it, audit the spec, establish what the building agents do not yet know about the stack, plan it in phases, judge the plan set, verify each plan, build each step on its own branch, review before merge, and reconcile what each step taught back into the plans that follow.",
   "author": {
     "name": "dujar",

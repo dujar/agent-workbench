@@ -526,10 +526,10 @@ a stack choice — it is what the agents cannot otherwise do at all.
 
 ## Running on a non-Anthropic backend
 
-The pipeline works on any Claude Code backend — GLM/Z.ai, a local model, an
-OpenAI-compatible proxy — because subagents, parallel worktrees and the
-`.agent-workbench/` state model are harness features, not model-API features.
-Two things need attention:
+The pipeline works on any Claude Code backend — GLM/Z.ai, DeepSeek, a local
+model, an OpenAI-compatible proxy — because subagents, parallel worktrees and
+the `.agent-workbench/` state model are harness features, not model-API
+features. Three things need attention:
 
 **Model aliases.** Agent frontmatter accepts `opus`, `sonnet`, `haiku` or
 `inherit`, never a raw model id, so the tiering above is only real if those
@@ -541,7 +541,26 @@ aliases map to different models. Point them somewhere distinct:
 ```
 
 Map both to the same id and every agent runs identically — which works, but the
-tiering is doing nothing.
+tiering is doing nothing. Check what the ids actually resolve to: a provider
+that is temporarily routing its strong model to its fast one collapses the
+tiering while both aliases still look distinct.
+
+**DeepSeek**, concretely: `ANTHROPIC_BASE_URL=https://api.deepseek.com/anthropic`
+with `deepseek-v4-pro` and `deepseek-flash` as the two aliases. Both carry 1M
+context, which suits a pipeline this context-hungry, and the `effort:` field
+every agent sets is honoured. Verified 2026-09-11 against
+[DeepSeek's Anthropic-API guide](https://api-docs.deepseek.com/guides/anthropic_api)
+— re-check it rather than trusting this line, which is exactly what
+`knowledge-agent` exists to say.
+
+**Prompt caching.** This is the one that costs money rather than correctness.
+Measured, a build step spends about 78% of its tokens on tool results replayed
+across calls — cheap when the backend honours `cache_control`, full price when
+it does not. Some Anthropic-compatible endpoints ignore that field
+([DeepSeek's does](https://api-docs.deepseek.com/guides/anthropic_api),
+checked 2026-09-11); a provider may still apply automatic caching of its own,
+which is not the same guarantee. Check before assuming a run costs what it
+costs on Anthropic, and lean harder on the length budgets if it does not.
 
 **Web search.** `market-agent` and `scout-agent` prefer `WebSearch`, which executes on the model
 provider's side and may not exist off Anthropic. It falls back to `WebFetch`
