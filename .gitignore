@@ -1,0 +1,5 @@
+# Transient worktrees from agent runs with isolation: "worktree"
+.claude/worktrees/
+
+# Personal Claude Code settings; .claude/settings.json stays committable
+.claude/settings.local.json
