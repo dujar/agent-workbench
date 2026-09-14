@@ -28,7 +28,7 @@ if [ -d "$WB/product" ]; then
     # gate passes only on a real date, or the check approves nothing.
     if ! grep -qE '^approved:' "$WB/product/state.md"; then
       bad "state.md has no 'approved:' line — plan-agent's gate cannot be evaluated"
-    elif grep -qE '^approved:[[:space:]]*(pending|)[[:space:]]*(#.*)?$' "$WB/product/state.md"; then
+    elif grep -qE '^approved:[[:space:]]*(pending)?[[:space:]]*(#.*)?$' "$WB/product/state.md"; then
       bad "state.md says 'approved: pending' — no approval on record"
     fi
     # loop ceilings are self-counted by the agent; check them from outside
