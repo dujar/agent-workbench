@@ -330,10 +330,15 @@ loops on ZCode produce.
    new base itself. Two builders each wrote their half against the same file;
    the merge is the only place anyone sees both halves together.
 4. Set that row's status in `step-feature-state.md` to `done`, or `blocked`.
-   A `STOPPED` builder is neither — it never branched, so it wrote no
-   `findings.md` and changed nothing. Leave the row `planned`, clear what it
-   named, and re-spawn it. Marking it `blocked` strands every step that
-   depends on it, for a step that has not been attempted.
+   A `STOPPED` builder is neither — it wrote no `findings.md` and changed
+   nothing on the base branch. Leave the row `planned`, clear what it named,
+   and re-spawn it. Marking it `blocked` strands every step that depends on
+   it, for a step that has not been attempted.
+   **A `STOPPED` that names a dispatch** — `verify-agent` or `review-agent`,
+   which is how the flattened loops ask on platforms with no nested spawn —
+   is not a failure at all: spawn what it named with the absolute worktree
+   root, step directory and branch it gave, then re-invoke the builder with
+   the verdict's path. The row stays `planned` and the branch stays put.
    On `BLOCKED`, salvage the lessons: copy the step's `findings.md` from the
    branch into `.agent-workbench/` on the base branch before the worktree is
    cleaned up — a blocked branch never merges, so `reconcile-agent` can
@@ -583,14 +588,17 @@ Both scripts live in the plugin's `bin/`, which Claude Code puts on `PATH`, so
 they run by bare name from any project — there is nothing to copy in. From a
 clone without the plugin installed, call them by path: `bin/check-workbench`.
 
-It fails loudly on: a tracker row whose directory is missing, a dependency on a
-step that does not exist or is built later, a status nothing ever writes, a
-`done` step with no `findings.md`, a *Resources* path under `../` that no
-longer resolves, a screen no journey reaches, a missing or still-`pending`
-`approved:` line, an open `NEEDS REPLANNING` escalation, unreconciled
-`findings.md` files while steps are still planned, a knowledge file with no
-`checked:` date or no source URL, and a loop that has run past its ceiling.
-Exit 0 clean, 1 on problems.
+It fails loudly on: a tracker row whose directory is missing, a step directory
+with no tracker or no `plan.md`, two step directories claiming the same number,
+a dependency on a step that does not exist, is built later, or is the step
+itself, a `done` step whose dependency is not `done`, a status nothing ever
+writes, a `done` step with no `findings.md`, a *Resources* path under `../`
+that no longer resolves, a `product/` missing `spec.md` or `state.md`, a screen
+no journey reaches, a missing or still-`pending` `approved:` line, an open
+`NEEDS REPLANNING` escalation, unreconciled `findings.md` files — whether
+steps are still planned or none are left — a knowledge file with no `checked:`
+date or no source URL, and a loop that has run past its ceiling. Exit 0 clean,
+1 on problems.
 
 It also prints the plan's shape, which fails nothing and is worth reading
 anyway:

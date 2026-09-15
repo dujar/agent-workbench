@@ -51,6 +51,13 @@ with their readers, never unilaterally:
   `check-workbench` (which strips `#` comments before judging emptiness).
 - **`approved:`** — `pending` is not an approval; only a date passes
   `check-workbench`. `plan-agent` refuses without one.
+- **`## Round <n> — <date>` in `reconciliation.md`** — `reconcile-agent`
+  writes it, `check-workbench` finds the last one to decide whether an
+  escalation is still open, and `plan-agent` reads "the last round" the same
+  way. Head a round any other way and the escalation check has nothing to
+  anchor on; it now falls back to scanning the whole file, which is a floor,
+  not a licence to drop the heading. `judgment.md` and `market.md` use the
+  same shape with a `, target: <file>` suffix.
 - **`blocks:`** — every queued question in `state.md`'s *Open* section carries
   `blocks <Q-numbers>` or `blocks none`. `product-agent` writes it, the
   orchestrator batches on it: a run of `none` goes through one picker call,
@@ -72,7 +79,11 @@ with their readers, never unilaterally:
   by `(agent, loop)` with `awk -F'|'`. The identities are documented in the
   README's run-log section and are the ceiling's unit. `wb-log` replaces `|`
   with `/` on purpose: an escaped pipe shifts every column after it and
-  splits one loop's count in two. Do not "fix" that escaping back.
+  splits one loop's count in two. Do not "fix" that escaping back. A row with
+  an empty loop column is not counted at all: `wb-log`'s third field is
+  optional, and collecting every step's reviews under one empty identity fails
+  a healthy parallel build, which is the one failure direction this check
+  cannot afford.
 - **Ceilings** — market/judge/audit/plan-judge: 2, review: 3, per *loop*.
   Enforced twice: self-counted by the agents, and counted from outside by
   `check-workbench` (run-log rows + the counters in `state.md` and the
@@ -95,6 +106,11 @@ with their readers, never unilaterally:
 - Length budgets ("six lines per hole", one-page plans) are load-bearing —
   they exist because output replay is the second cost driver. Do not soften
   them into suggestions.
+- Every agent with a briefing-contract refusal carries `STOPPED — <reason>` in
+  its verdict grammar. A refusal with no `VERDICT:` line is not a stop the
+  caller can read: the rule everywhere is re-run once, then report the pass as
+  not done, so a deterministic refusal spends a whole ceiling reaching itself
+  twice.
 - Reports are receipts: verdict + `wrote:` paths, nothing else. The files
   are the output. If you add prose to a Report section, you are adding
   tokens to every run.

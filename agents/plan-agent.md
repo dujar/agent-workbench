@@ -101,12 +101,20 @@ project.
 ```markdown
 | step | phase  | feature      | dir                  | status  | depends on |
 |------|--------|--------------|----------------------|---------|------------|
-| 1    | 1      | repo-setup   | step-1-repo-setup/   | planned | —          |
-| 2    | 1      | ci-deploy    | step-2-ci-deploy/    | planned | 1          |
+| 1    | 1      | repo-setup   | step-1-repo-setup/   | done    | —          |
+| 2    | 1      | ci-deploy    | step-2-ci-deploy/    | done    | 1          |
 | 3    | 2      | auth         | step-3-auth/         | planned | 2          |
-| 4    | 2      | project-list | step-4-project-list/ | planned | 3          |
-| 5    | 3      | e2e-journeys | step-5-e2e-journeys/ | planned | 4          |
+| 4    | 2      | project-list | step-4-project-list/ | planned | 2          |
+| 5    | 2      | settings     | step-5-settings/     | planned | 2          |
+| 6    | 3      | e2e-journeys | step-6-e2e-journeys/ | planned | 3, 4, 5    |
 ```
+
+Read the *depends on* column of that example as the shape to aim for, not just
+the format. Steps 3, 4 and 5 each depend on the deploy that carries them, not
+on each other — three builders run at once. Chaining them 3 -> 4 -> 5 because
+each appends a route to the same table would describe the same product and
+build it in three rounds instead of one; `check-workbench` prints
+`plan shape:` and warns when a set comes out that way.
 
 Below the table, write a **Next** block. The caller comes back to this between
 merges, so it lives on disk rather than in a message:
@@ -119,11 +127,11 @@ merges, so it lives on disk rather than in a message:
    the **value** that matters, never the line: the line is written empty as a
    placeholder, so testing whether it exists is always true and reconciliation
    never runs, while every builder stops waiting for it.
-2. Runnable now: **step 3, step 4** (dependencies all `done`). Nothing else — a
-   step whose dependency is still `planned`, `blocked`, or mid-build is not
-   ready, and spawning it builds on code that does not exist yet. Both go at
-   once: one `implement-agent` each, in a single parallel block, each with
-   `isolation: "worktree"`.
+2. Runnable now: **step 3, step 4, step 5** (dependencies all `done`). Nothing
+   else — a step whose dependency is still `planned`, `blocked`, or mid-build
+   is not ready, and spawning it builds on code that does not exist yet. All
+   three go at once: one `implement-agent` each, in a single parallel block,
+   each with `isolation: "worktree"`.
 3. A builder returning `READY TO MERGE` has a rebased, reviewed branch. Merge
    those **one at a time** — git refuses to update a branch checked out
    elsewhere. Run the suite on the base branch after each merge, before the

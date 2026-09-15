@@ -37,7 +37,7 @@ if [ -d "$WB/product" ]; then
       [ -n "${n:-}" ] && [ "$n" -gt 2 ] && bad "$a ran $n times — ceiling is 2, the loop is not closing"
     done
   fi
-  # a screen nobody reaches, or a journey pointing at a screen that is not there
+  # a screen nobody reaches
   if [ -d "$WB/product/screens" ] && [ -f "$WB/product/journeys.md" ]; then
     for s in "$WB/product/screens"/*.html; do
       [ -e "$s" ] || continue
@@ -103,8 +103,12 @@ if [ -f "$RECON" ]; then
   # Only the LAST round matters — an earlier one being resolved or not is
   # history, not a live gap. Find the line number of the last "## Round "
   # heading and take everything from there to EOF, in original order.
+  # No "## Round " heading anywhere means the file was written without the
+  # format reconcile-agent is told to use. Read the whole file rather than
+  # nothing: an escalation nobody can anchor on is still an escalation, and
+  # skipping the check silently passes the one gap that brings plan-agent in.
   start=$(grep -n '^## Round ' "$RECON" | tail -1 | cut -d: -f1)
-  last_round=$([ -n "$start" ] && tail -n "+$start" "$RECON")
+  last_round=$(tail -n "+${start:-1}" "$RECON")
   if printf '%s\n' "$last_round" | grep -qi "NEEDS REPLANNING" \
      && ! printf '%s\n' "$last_round" | grep -qiE "Resolved by (removing )?step"; then
     say "reconciliation/"
@@ -123,6 +127,12 @@ fi
 # judge. A note that drifts splits one loop into two and undercounts — this
 # fails open, which is the right direction for a check whose whole value is
 # that people still read it.
+#
+# A row with no note at all is skipped for the same reason, and it is the case
+# that would otherwise fail CLOSED: wb-log's third field is optional, so four
+# parallel steps each logging one clean review round would collect under a
+# single empty identity and read as one step reviewed four times. A false
+# runaway on a healthy build is how a check stops being read.
 LOG="$WB/run-log.md"
 if [ -f "$LOG" ]; then
   say "run-log/"
@@ -136,7 +146,7 @@ if [ -f "$LOG" ]; then
       && bad "$agent ran $count times against '${loop:-—}', ceiling is $ceil — the loop is not closing"
   done < <(awk -F'|' 'NR>2 && NF>3 {
              a=$3; n=$5; gsub(/^ +| +$/,"",a); gsub(/^ +| +$/,"",n)
-             if (a!="") print a "\t" n }' "$LOG" \
+             if (a!="" && n!="") print a "\t" n }' "$LOG" \
            | sort | uniq -c \
            | sed -E 's/^ *([0-9]+) /\1\t/')
 fi

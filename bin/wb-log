@@ -14,6 +14,9 @@
 # for audit-agent, the step dir for review-agent, the target for market-agent
 # and judge-agent, and just "scout" for scout-agent. Keep it identical across
 # a loop's rounds or the count splits and the ceiling stops being enforced.
+# Omit it and the row is not counted at all — check-workbench skips rows with
+# no loop rather than collecting every step's reviews under one empty identity,
+# so a ceilinged agent logged without it goes unwatched.
 
 set -uo pipefail
 WB="${WB:-.agent-workbench}"

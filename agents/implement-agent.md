@@ -52,11 +52,19 @@ loop flattens through the caller instead:
   report `STOPPED — dispatch verify-agent on <step dir>, then re-invoke`. On
   the re-invocation the verdict is in `verify.md`; read it, do not assume it.
 - **At review time** — tests pass, work committed, no spawn tool: report
-  `BLOCKED — dispatch review-agent on branch <branch>, then re-invoke`. The
+  `STOPPED — dispatch review-agent on branch <branch>, then re-invoke`. The
   caller runs one review round per re-invocation and puts *what changed since
   the last round* into the dispatch prompt — that is what the
   resume-by-send pattern below carries, and under flattening the prompt
   carries it instead.
+
+  **Not `BLOCKED`.** `BLOCKED` tells the caller to mark the row `blocked` and
+  move on, which strands every step that depends on yours — on the first
+  review round of a step whose tests pass and whose work is committed. A
+  dispatch request is a stop that expects to be re-invoked, and `STOPPED`
+  naming a dispatch is the shape the caller already routes on. The branch and
+  the work stay where they are either way; only the caller's next move
+  differs, and `BLOCKED` picks the wrong one.
 - **After each review round** — read `review.md`. `APPROVED` means merge,
   exactly as in *Merging*. A blocking count means fix, commit, and stop again
   with the same dispatch line. Never merge on the caller's say-so; the
@@ -353,6 +361,12 @@ a `findings.md` with an empty `reconciled:` line is not inert. It is exactly
 what makes `reconcile-agent` run and every other builder stop. Writing one
 because you were blocked *by* that rule arms it a second time, for a step that
 never ran. Report the stop; the caller acts on the verdict.
+
+**Write nothing when you stop to ask for a dispatch either**, even though that
+one happens after branching. The step is mid-loop and coming back; a
+`findings.md` with an empty `reconciled:` line would stop every other builder
+while yours is still in review. Write it when the step reaches an outcome —
+merged, ready to merge, or blocked — not when it pauses.
 
 ```markdown
 # Step 3 — auth

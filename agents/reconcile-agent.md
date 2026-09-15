@@ -160,13 +160,25 @@ Never commit code. You change plans; someone else changes the repo. If
 rather than committing around it.
 
 Append this round to `.agent-workbench/reconciliation.md` — which findings you
-folded in, which plans changed and why, and the judge's verdict. **This
-append is not gated on having made edits**: a `NEEDS REPLANNING` round with
-no plan edits must still land here, because the escalation on disk is the
-only thing that brings `plan-agent` in — with the finding already dated
+folded in, which plans changed and why, and the judge's verdict — under a
+heading of exactly this shape:
+
+```markdown
+## Round 3 — 2026-09-10
+```
+
+`## Round ` is not decoration. `check-workbench` finds the last one and reads
+from there to EOF to decide whether an escalation is still open, and
+`plan-agent` reads "the last round" the same way. Head the round any other way
+and the only check that catches an unresolved `NEEDS REPLANNING` has nothing
+to anchor on.
+
+**This append is not gated on having made edits**: a `NEEDS REPLANNING`
+round with no plan edits must still land here, because the escalation on disk
+is the only thing that brings `plan-agent` in — with the finding already dated
 `reconciled:`, an escalation that exists only in your reply is invisible to
-`check-workbench` and the gap is silently lost. Earlier rounds
-stay; a finding that keeps rippling is worth seeing twice.
+`check-workbench` and the gap is silently lost. Earlier rounds stay; a finding
+that keeps rippling is worth seeing twice.
 
 Last, add `reconciled: <today>` to the header of every `findings.md` you
 processed, and commit that too. Without it the next run does all of this
@@ -205,12 +217,19 @@ verdict itself: a caller matching the line exactly should not have to strip
 markdown first:
 
 ```
-VERDICT: <one of: RECONCILED — <n> plans updated   |   NOTHING TO RECONCILE   |   NEEDS REPLANNING — blocking   |   NEEDS REPLANNING — <step> still buildable>
+VERDICT: <one of: RECONCILED — <n> plans updated   |   NOTHING TO RECONCILE   |   NEEDS REPLANNING — blocking   |   NEEDS REPLANNING — <step> still buildable   |   STOPPED — <reason>, dispatched: <agent to spawn>>
 wrote: <the path(s), or none>
 ```
 
 Write `wrote: (none)` when nothing was written — the NOTHING TO RECONCILE
 case leaves no file, and a bare `wrote:` line reads as a truncated receipt.
+
+`STOPPED — …, dispatched: plan-judge-agent` is the verdict for the flattened
+path above — plan edits written, nothing committed, no `reconciled:` line
+touched, waiting on a judge round the caller has to spawn. It is the only
+outcome that is neither finished nor a finding, so it needs its own verdict:
+reporting the round as `RECONCILED` would tell the caller the findings are
+dated and the builders can go, when none of that has happened yet.
 
 `NEEDS REPLANNING` needs its second half, always. **Blocking** means nothing
 should be built until `plan-agent` runs. **`<step> still buildable`** means

@@ -114,9 +114,16 @@ verdict itself: a caller matching the line exactly should not have to strip
 markdown first:
 
 ```
-VERDICT: <one of: SOLID   |   <n> holes>
+VERDICT: <one of: SOLID   |   <n> holes   |   STOPPED — <reason>>
 wrote: <the path(s)>
 ```
+
+`STOPPED — <reason>` covers the briefing-contract stops: no `target` named and
+no `spec.md` to fall back on. A caller grepping for `VERDICT:` must be able to
+tell a clean stop from a crash: with no such line at all, the rule it follows
+is to re-run you once and then report the pass as not done — so a stop you
+could have stated in one line spends both rounds of your ceiling reaching the
+same refusal twice. Write `wrote: (none)` when you stopped before writing.
 
 Add the riskiest assumption, in one sentence. Always, even on `SOLID` — it is
 the one thing worth carrying in the caller's head rather than a file.
